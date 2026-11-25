@@ -61,7 +61,7 @@ h2{font-size:19px;margin:0 0 6px}
 .back-link{border:0;background:none;color:var(--accent);font:800 15px Nunito,sans-serif;padding:6px 0 14px;cursor:pointer}.vocab-list{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}.vocab-row{display:flex;justify-content:space-between;gap:6px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.vocab-row b{font-family:Georgia,serif}
 .lesson-exercise{min-height:350px}.lesson-exercise h3{font-size:21px;margin:12px 0}.latin-prompt{font:600 24px Cinzel,Georgia,serif;text-align:center;margin:18px 0;color:var(--accent)}
 .lesson-complete{text-align:center;padding:30px 22px}.complete-mark{margin:auto auto 12px;border-radius:50%;width:58px;height:58px;display:grid;place-items:center;background:var(--ok);color:white;font-size:30px;font-weight:800}
-.task-token{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 13px;border-radius:18px;font:800 16px Cinzel,Georgia,serif;cursor:pointer}.task-token:disabled{opacity:.4}
+.answer-input{display:block;width:100%;min-height:56px;margin:18px 0 10px;padding:13px 15px;border:2px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink);font:600 19px Cinzel,Georgia,serif;outline:none}.answer-input:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}.answer-input[hidden]{display:none}
 #taskActions{margin-top:16px}#lessonStart{width:100%;margin:0 0 20px}
 @media(max-width:420px){nav button{font-size:12px}.vocab-list{grid-template-columns:1fr}.lesson-node{padding:12px}}
 
@@ -91,7 +91,7 @@ h2{font-size:19px;margin:0 0 6px}
   <div class="card lesson-note"><h3>Nyelvtani útmutató</h3><p id="lessonGrammar"></p><p class="example" id="lessonExample"></p></div>
   <div class="card"><h3>A lecke szavai</h3><div class="vocab-list" id="lessonWords"></div></div><button class="btn fill" id="lessonStart">Lecke indítása</button>
  </div>
- <div class="card lesson-exercise" id="lessonExercise" hidden><p class="sub" id="lessonStep"></p><div class="bar"><i id="lessonBar"></i></div><h3 id="taskPrompt"></h3><p class="latin-prompt" id="taskDetail"></p><div id="taskOptions"></div><div id="taskTokens" class="pills" hidden></div><p class="latin-prompt" id="taskAnswer" hidden></p><p class="fb" id="taskFeedback" aria-live="polite"></p><div class="row" id="taskActions"></div></div>
+ <div class="card lesson-exercise" id="lessonExercise" hidden><p class="sub" id="lessonStep"></p><div class="bar"><i id="lessonBar"></i></div><h3 id="taskPrompt"></h3><p class="latin-prompt" id="taskDetail"></p><div id="taskOptions"></div><input id="taskInput" class="answer-input" type="text" maxlength="120" placeholder="Írd be a latin mondatot" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" hidden><p class="fb" id="taskFeedback" aria-live="polite"></p><div class="row" id="taskActions"></div></div>
  <div class="card lesson-complete" id="lessonComplete" hidden><div class="complete-mark">✓</div><h2>Lecke kész!</h2><p id="completeText"></p><button class="btn fill" id="completeBack">Vissza a tanulási úthoz</button></div>
 </div></section>
 <section id="szavak" hidden>
@@ -126,9 +126,8 @@ h2{font-size:19px;margin:0 0 6px}
 </section>
 
 <section id="mondatok" hidden>
-  <div class="card"><h2>Fordítsd latinra</h2><p class="note">A latinban szabad a szórend, de az ige általában a mondat végén áll. Állítsd össze a mondatot a szavakból.</p>
-  <p class="hu" id="sq" style="font-size:22px;margin:10px 0"></p><div class="pills" id="sbank"></div>
-  <p class="lat" id="sout" style="font-size:24px;min-height:1.6em"></p>
+  <div class="card"><h2>Fordítsd latinra</h2><p class="note">Írd be a latin mondatot. A szórend szabad; a szóalakok és a ragok számítanak.</p>
+  <p class="hu" id="sq" style="font-size:22px;margin:10px 0"></p><input id="sinput" class="answer-input" type="text" maxlength="120" placeholder="Írd be a latin mondatot" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done">
   <div class="row"><button class="btn" id="sclear">Törlés</button><button class="btn fill" id="scheck">Ellenőrzés</button></div>
   <p class="fb" id="sfb" aria-live="polite"></p><button class="btn fill" id="snext" style="margin-top:8px;display:none">Következő mondat</button></div>
 </section>
@@ -230,25 +229,14 @@ function setDir(d){dir=d;$("d1").setAttribute("aria-pressed",d===0);$("d2").setA
 $("d1").onclick=function(){setDir(0)};$("d2").onclick=function(){setDir(1)};
 // sentence builder
 var S=[["A lány szereti a rózsát.","Puella rosam amat"],["A fiú látja a barátot.","Puer amicum videt"],["A király hallja a lányokat.","Rex puellas audit"],["Az úr dicséri a rabszolgát.","Dominus servum laudat"],["A barátok az erdőben sétálnak.","Amici in silva ambulant"],["Az anya szereti a lányát.","Mater filiam amat"],["A katona nézi a várost.","Miles urbem spectat"],["A király a városban van.","Rex in urbe est"],["A lányok a csillagokat nézik.","Puellae stellas spectant"]];
-var built=0,si=0,pick=[],solved=false;
-function showS(){$("sout").textContent=pick.join(" ")||"…"}
-function sent(){
- built=1;solved=false;pick=[];var q=S[si%S.length];
- $("sq").textContent=q[0];$("sfb").textContent="";$("snext").style.display="none";
- var bank=$("sbank");bank.innerHTML="";
- shuf(q[1].split(" ")).forEach(function(w){var b=document.createElement("button");b.className="pill";b.textContent=w;
-  b.onclick=function(){if(b.disabled||solved)return;b.disabled=true;b.style.opacity=.4;pick.push(w);showS()};bank.appendChild(b)});
- showS();
-}
-$("sclear").onclick=function(){if(!solved)sent2()};
-function sent2(){var k=si;sent();si=k}
+var built=0,si=0,solved=false;
+function sent(){built=1;solved=false;var q=S[si%S.length];$("sq").textContent=q[0];$("sinput").value="";$("sfb").textContent="";$("snext").style.display="none";$("sinput").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();$("scheck").click()}}}
+$("sclear").onclick=function(){if(!solved){$("sinput").value="";$("sfb").textContent="";$("sinput").focus()}};
 $("scheck").onclick=function(){
- if(solved)return;var q=S[si%S.length],c=q[1].split(" ");
- if(pick.length<c.length){$("sfb").style.color="var(--bad)";$("sfb").textContent="Használd fel az összes szót.";return}
- var ok=pick.slice().sort().join()===c.slice().sort().join()&&pick[pick.length-1]===c[c.length-1];
- if(ok){solved=true;st.xp=(st.xp||0)+10;st.streak++;save();head();$("sfb").style.color="var(--ok)";
-  $("sfb").textContent="Helyes! +10 pont"+(pick.join(" ")!==q[1]?" · Szokásos sorrend: "+q[1]:"");$("snext").style.display="block"}
- else{st.streak=0;head();$("sfb").style.color="var(--bad)";$("sfb").textContent="Még nem jó. Figyelj a végződésekre, és az ige kerüljön a végére."}
+ if(solved)return;var q=S[si%S.length],typed=$("sinput").value.trim();
+ if(!typed){$("sfb").style.color="var(--bad)";$("sfb").textContent="Írd be a latin mondatot.";return}
+ if(normalizedSentence(typed)===normalizedSentence(q[1])){solved=true;st.xp=(st.xp||0)+10;st.streak++;save();head();$("sfb").style.color="var(--ok)";$("sfb").textContent="Helyes! A szórend változhat; a ragokat jól használtad. +10 pont";$("snext").style.display="block"}
+ else{st.streak=0;head();$("sfb").style.color="var(--bad)";$("sfb").textContent="A szórend szabad. Ellenőrizd a ragokat, a szóalakokat és azt, hogy minden szó szerepel-e."}
 };
 $("snext").onclick=function(){si++;sent()};
 
@@ -291,7 +279,7 @@ function makeTasks(l){var words=shuf(l.words).slice(0,3),tasks=words.map(functio
 function beginLesson(){var i=lessonSession.lesson,l=C.lessons[i];lessonSession={lesson:i,tasks:makeTasks(l),at:0,pick:[]};$("lessonIntro").hidden=true;$("lessonExercise").hidden=false;$("lessonComplete").hidden=true;renderTask()}
 function addAction(label,fn,filled){var b=document.createElement("button");b.className="btn"+(filled?" fill":"");b.textContent=label;b.onclick=fn;$("taskActions").appendChild(b)}
 function renderTask(){
- var s=lessonSession,t=s.tasks[s.at],box=$("taskOptions"),tokens=$("taskTokens"),actions=$("taskActions");box.innerHTML="";tokens.innerHTML="";tokens.hidden=true;actions.innerHTML="";$("taskAnswer").hidden=true;$("taskFeedback").textContent="";
+ var s=lessonSession,t=s.tasks[s.at],box=$("taskOptions"),input=$("taskInput"),actions=$("taskActions");box.innerHTML="";input.hidden=true;input.value="";actions.innerHTML="";$("taskFeedback").textContent="";
  $("lessonStep").textContent="Feladat "+(s.at+1)+" / "+s.tasks.length;$("lessonBar").style.width=(100*s.at/s.tasks.length)+"%";
  if(t.type==="word"){
   var p=W.filter(function(w){return w[0]===t.word})[0];$("taskPrompt").textContent="Mit jelent magyarul?";$("taskDetail").textContent=p[0];
@@ -299,22 +287,22 @@ function renderTask(){
  }else if(t.type==="grammar"){
   $("taskPrompt").textContent=t.check[0];$("taskDetail").textContent="";t.check.slice(1,5).forEach(function(choice,i){var b=document.createElement("button");b.className="opt";b.textContent=choice;b.onclick=function(){chooseTask(b,i===t.check[5],"Helyes.",t.check[1])};box.appendChild(b)})
  }else{
-  var q=S[t.index];s.pick=[];$("taskPrompt").textContent="Rakd össze latinul!";$("taskDetail").textContent=q[0];tokens.hidden=false;$("taskAnswer").hidden=false;$("taskAnswer").textContent="";
-  shuf(q[1].split(" ")).forEach(function(word){var b=document.createElement("button");b.className="task-token";b.textContent=word;b.onclick=function(){if(b.disabled)return;b.disabled=true;s.pick.push(word);showPicked()};tokens.appendChild(b)});
-  $("taskFeedback").textContent="Koppints a szavakra, majd ellenőrizd a mondatot.";addAction("Ellenőrzés",checkSentence,true);addAction("Újrakezdés",function(){s.pick=[];renderTask()},false)
+  var q=S[t.index];$("taskPrompt").textContent="Írd be latinul!";$("taskDetail").textContent=q[0];input.hidden=false;input.value="";input.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();checkSentence()}};
+  $("taskFeedback").textContent="A szórend szabad; a szóalakokra és a ragokra figyelj.";addAction("Ellenőrzés",checkSentence,true);addAction("Törlés",function(){input.value="";input.focus()},false);setTimeout(function(){input.focus()},100)
  }
 }
-function showPicked(){$("taskAnswer").textContent=lessonSession.pick.join(" ")||"…"}
 function chooseTask(button,ok,success,answer){
  if(button.disabled)return;Array.prototype.forEach.call($("taskOptions").children,function(b){b.disabled=true});button.classList.add(ok?"ok":"bad");
  if(ok){$("taskFeedback").textContent=success;$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+3;st.streak=(st.streak||0)+1}
  else{$("taskFeedback").textContent="Nem egészen. Helyes válasz: "+answer;$("taskFeedback").style.color="var(--bad)";st.streak=0}
  save();head();addAction("Folytatás",nextTask,true)
 }
+function normalizedSentence(text){return text.toLowerCase().replace(/[.,;:!?]/g," ").trim().split(/\s+/).filter(Boolean).sort().join(" ")}
 function checkSentence(){
- var s=lessonSession,t=s.tasks[s.at],q=S[t.index];if(s.pick.length!==q[1].split(" ").length){$("taskFeedback").textContent="Használd fel az összes szót.";$("taskFeedback").style.color="var(--bad)";return}
- if(s.pick.join(" ")===q[1]){$("taskFeedback").textContent="Helyes! A mondat jelentése: "+q[0];$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+5;st.streak=(st.streak||0)+1;save();head();$("taskActions").innerHTML="";addAction("Folytatás",nextTask,true)}
- else{$("taskFeedback").textContent="Még nem jó. Figyelj az esetvégződésekre és az ige helyére.";$("taskFeedback").style.color="var(--bad)"}
+ var s=lessonSession,t=s.tasks[s.at],q=S[t.index],typed=$("taskInput").value.trim();
+ if(!typed){$("taskFeedback").textContent="Írd be a latin mondatot.";$("taskFeedback").style.color="var(--bad)";return}
+ if(normalizedSentence(typed)===normalizedSentence(q[1])){$("taskFeedback").textContent="Helyes! A szórend változhat; a ragokat jól használtad. A mondat jelentése: "+q[0];$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+5;st.streak=(st.streak||0)+1;save();head();$("taskActions").innerHTML="";addAction("Folytatás",nextTask,true)}
+ else{$("taskFeedback").textContent="A szórend nem számít. Ellenőrizd a ragokat, a szóalakokat és azt, hogy minden szó szerepel-e.";$("taskFeedback").style.color="var(--bad)"}
 }
 function nextTask(){lessonSession.at++;lessonSession.pick=[];if(lessonSession.at>=lessonSession.tasks.length)finishLesson();else renderTask()}
 function finishLesson(){
