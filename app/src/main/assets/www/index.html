@@ -195,6 +195,8 @@ var NAV={puella:"puella",dominus:"dominus",rex:"rex",amare:"amāre",imperf:"amā
 var $=function(i){return document.getElementById(i)};
 var st={known:{},streak:0,best:0};
 try{var s=JSON.parse(localStorage.getItem("felis")||"null");if(s)st=s}catch(e){}
+// Régebbi verziókból megmaradt mentések kiegészítése, hogy az indulás ne álljon le.
+st.known=st.known||{};st.lessonsDone=st.lessonsDone||{};st.groupDone=st.groupDone||{};st.xp=Number(st.xp)||0;st.streak=Number(st.streak)||0;st.best=Number(st.best)||0;
 function save(){try{localStorage.setItem("felis",JSON.stringify(st))}catch(e){}}
 function head(){var x=st.xp||0,done=Object.keys(st.lessonsDone||{}).filter(function(k){return st.lessonsDone[k]}).length;$("streak").innerHTML="<div class=\"gem-count\">◆ "+x+"</div><small>Szint "+(Math.floor(x/50)+1)+" · sorozat "+(st.streak||0)+"</small>";if($("profileXp"))$("profileXp").textContent=x;if($("profileLevel"))$("profileLevel").textContent=Math.floor(x/50)+1;if($("profileLessons"))$("profileLessons").textContent=done+" / "+C.lessons.length;if($("profileStreak"))$("profileStreak").textContent=st.streak||0}
 // Alsó navigáció és segédanyagok.
