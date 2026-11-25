@@ -299,9 +299,9 @@ function renderTask(){
  }else if(t.type==="grammar"){
   $("taskPrompt").textContent=t.check[0];$("taskDetail").textContent="";t.check.slice(1,5).forEach(function(choice,i){var b=document.createElement("button");b.className="opt";b.textContent=choice;b.onclick=function(){chooseTask(b,i===t.check[5],"Helyes.",t.check[1])};box.appendChild(b)})
  }else{
-  var q=S[t.index];$("taskPrompt").textContent="Rakd össze latinul!";$("taskDetail").textContent=q[0];tokens.hidden=false;$("taskAnswer").hidden=false;$("taskAnswer").textContent="";
+  var q=S[t.index];s.pick=[];$("taskPrompt").textContent="Rakd össze latinul!";$("taskDetail").textContent=q[0];tokens.hidden=false;$("taskAnswer").hidden=false;$("taskAnswer").textContent="";
   shuf(q[1].split(" ")).forEach(function(word){var b=document.createElement("button");b.className="task-token";b.textContent=word;b.onclick=function(){if(b.disabled)return;b.disabled=true;s.pick.push(word);showPicked()};tokens.appendChild(b)});
-  $("taskFeedback").textContent="Koppints a szavakra, majd ellenőrizd a mondatot.";addAction("Ellenőrzés",checkSentence,true);addAction("Újrakezdés",function(){renderTask()},false)
+  $("taskFeedback").textContent="Koppints a szavakra, majd ellenőrizd a mondatot.";addAction("Ellenőrzés",checkSentence,true);addAction("Újrakezdés",function(){s.pick=[];renderTask()},false)
  }
 }
 function showPicked(){$("taskAnswer").textContent=lessonSession.pick.join(" ")||"…"}
