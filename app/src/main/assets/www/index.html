@@ -65,6 +65,31 @@ h2{font-size:19px;margin:0 0 6px}
 #taskActions{margin-top:16px}#lessonStart{width:100%;margin:0 0 20px}
 @media(max-width:420px){nav button{font-size:12px}.vocab-list{grid-template-columns:1fr}.lesson-node{padding:12px}}
 
+
+/* Cattus topic-map layout */
+:root,:root[data-theme="dark"]{--bg:#fbf9fa;--surface:#fff;--ink:#3c383c;--muted:#716b70;--line:#e5dfe2;--accent:#b63c60;--accent-ink:#fff;--gold:#267da5;--ok:#278342;--bad:#a8423e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fbf9fa;--surface:#fff;--ink:#3c383c;--muted:#716b70;--line:#e5dfe2;--accent:#b63c60;--accent-ink:#fff;--gold:#267da5;--ok:#278342;--bad:#a8423e;color-scheme:light}}
+body{background:var(--bg)}
+.wrap{max-width:760px;padding:16px 16px calc(105px + env(safe-area-inset-bottom,0px))}
+header{margin:-16px -16px 12px;padding:22px 28px 24px;background:#f6e9ed;align-items:flex-start}
+header h1{font-size:34px;letter-spacing:.02em}.streak{display:block;color:#247da4;font-size:16px;line-height:1.35}.gem-count{font-size:25px;font-weight:900}.streak small{display:block;color:#a87924;font-size:13px;margin-top:4px}
+nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:space-around;gap:0;margin:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));border:0;border-radius:0;background:#b43c60;box-shadow:0 -2px 10px rgba(62,24,37,.12)}
+nav.bottom-nav button{flex:1;display:grid;place-items:center;min-height:54px;padding:8px;border:0;border-radius:8px;background:transparent;color:#fff;cursor:pointer}
+nav.bottom-nav button[aria-selected="true"]{background:rgba(118,20,53,.24);color:#fff}
+nav.bottom-nav svg{width:28px;height:28px;fill:currentColor}
+nav.bottom-nav button:nth-child(2) svg{fill:none}
+section#tanulas{padding-top:8px}
+.map-heading{font-size:18px;font-weight:800;color:var(--muted);margin:0 0 8px 4px}
+.topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;row-gap:48px;padding:10px 0 28px}
+.topic-node{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;width:100%;min-height:162px;padding:0 4px;border:0;background:transparent;color:var(--ink);font:700 16px/1.25 Nunito,system-ui,sans-serif;text-align:center;cursor:pointer}
+.topic-node.center{grid-column:1/-1;justify-self:center;width:50%}
+.topic-orb{--topic:#b43c60;width:min(38vw,144px);height:min(38vw,144px);max-width:144px;max-height:144px;min-width:104px;min-height:104px;border-radius:50%;display:grid;place-items:center;border:8px solid color-mix(in srgb,var(--topic) 70%,white);background:var(--topic);color:#fff;font:600 42px/1 Georgia,serif;box-shadow:inset 0 0 0 2px rgba(255,255,255,.2)}
+.topic-node.locked{cursor:default;color:#777}.topic-node.locked .topic-orb{--topic:#a5a5a5!important;border-color:#d0d0d0;background:#a5a5a5;color:#fff}
+.topic-node.done .topic-orb{box-shadow:inset 0 0 0 4px rgba(255,255,255,.48)}
+.topic-name{max-width:170px}.map-note{text-align:center;padding:4px 10px 12px}
+.profile-card{text-align:center}.profile-gems{color:#267da5;font-size:32px;font-weight:900;margin:0}.profile-stats{display:flex;justify-content:space-around;margin-top:20px}.profile-stats span{display:flex;flex-direction:column}.profile-stats b{font-size:20px}.profile-stats small{color:var(--muted)}.profile-links{flex-direction:column}.profile-links .btn{width:100%}
+@media(max-width:420px){.topic-grid{row-gap:36px}.topic-node{min-height:155px;font-size:15px}.topic-orb{min-width:100px;min-height:100px}.wrap{padding-left:12px;padding-right:12px}}
+
 </style>
 </head>
 <body>
@@ -73,18 +98,17 @@ h2{font-size:19px;margin:0 0 6px}
   <div><h1>Felis 🐈</h1><p class="sub">Latin tanulás magyarul</p></div>
   <div class="streak" id="streak" aria-live="polite">Sorozat: 0</div>
 </header>
-<nav role="tablist" aria-label="Fő részek">
-  <button role="tab" aria-selected="true" data-t="tanulas">Tanulás</button>
-  <button role="tab" aria-selected="false" data-t="szavak">Szótár</button>
-  <button role="tab" aria-selected="false" data-t="kviz">Ismétlés</button>
-  <button role="tab" aria-selected="false" data-t="ragozas">Táblázatok</button>
-  <button role="tab" aria-selected="false" data-t="mondatok">Mondatok</button>
+<nav role="tablist" aria-label="Főmenü" class="bottom-nav">
+  <button role="tab" aria-label="Főoldal" title="Főoldal" aria-selected="true" data-t="tanulas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5v10h-6v-6H9v6H3z"/></svg></button>
+  <button role="tab" aria-label="Szótár" title="Szótár" aria-selected="false" data-t="szavak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h6l2 2h8v11H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 11h8M8 14.5h8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+  <button role="tab" aria-label="Ismétlés" title="Ismétlés" aria-selected="false" data-t="kviz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.3l6.3-.9z"/></svg></button>
+  <button role="tab" aria-label="Profil" title="Profil" aria-selected="false" data-t="profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M4 21c.4-4.2 3.5-6.5 8-6.5s7.6 2.3 8 6.5z"/></svg></button>
 </nav>
 
 <section id="tanulas">
 <div id="courseMap">
- <div class="course-intro"><p class="eyebrow">A saját tanulási útvonalad</p><h2>Latin lépésről lépésre</h2><p class="note">Minden lecke rövid nyelvtani magyarázattal és szólistával indul, utána változatos feladatokon gyakorolhatsz.</p><div class="course-progress"><span id="courseProg">0 / 8 lecke</span><div class="bar"><i id="courseBar"></i></div></div></div>
- <div id="courseUnits"></div><p class="note">A következő lecke az előző teljesítése után nyílik meg. A szótár és a táblázatok bármikor elérhetők.</p>
+ <div id="topicGrid" class="topic-grid"></div>
+ <p class="note map-note">A színes témakörök megnyithatók. A következő témák a tanulás során oldódnak fel.</p>
 </div>
 <div id="lessonPage" hidden><button class="back-link" id="courseBack">← Tanulási útvonal</button>
  <div id="lessonIntro"><p class="eyebrow" id="lessonUnit"></p><h2 id="lessonTitle"></h2><p class="note" id="lessonGoal"></p>
@@ -141,6 +165,13 @@ h2{font-size:19px;margin:0 0 6px}
   <div class="card lesson"><h2>Igeidők a végződésekből</h2><p>Folyamatos múlt: <b>amābam</b> („szerettem”), a -bā- jelöli. Befejezett múlt: <b>amāvī</b> („megszerettem, szerettem”), a -v- jelöli. Jövő: <b>amābō</b> („szeretni fogok”). A személyragok közben ugyanazt a mintát követik.</p></div>
   <div class="card lesson"><h2>3. ragozás: a legváltozatosabb</h2><p>A <b>rex, regis</b> (király) szónak a tője az alanyesetben megváltozik: rex, de regis, regem. Ezért a latin szótár két alakot ad meg: az alanyesetet és a birtokos esetet.</p></div>
 </section>
+<section id="profil" hidden>
+ <h2>Profil</h2>
+ <div class="card profile-card"><p class="profile-gems">◆ <span id="profileXp">0</span></p><p class="note">pont</p><div class="profile-stats"><span><b id="profileLevel">1</b><small>Szint</small></span><span><b id="profileLessons">0 / 8</b><small>Lecke</small></span><span><b id="profileStreak">0</b><small>Sorozat</small></span></div></div>
+ <h3>Segédanyagok</h3><div class="row profile-links"><button class="btn" data-open="ragozas">Ragozási táblázatok</button><button class="btn" data-open="mondatok">Mondatfordítás</button><button class="btn" data-open="alapok">Latin alapok</button></div>
+ <div class="card"><h3>Haladás</h3><p class="note">A szókártyák és a leckék haladása ezen az eszközön mentődik.</p><button class="btn" data-open="tanulas">Vissza a témakörökhöz</button></div>
+</section>
+
 </div>
 
 <script>
@@ -161,14 +192,16 @@ var $=function(i){return document.getElementById(i)};
 var st={known:{},streak:0,best:0};
 try{var s=JSON.parse(localStorage.getItem("felis")||"null");if(s)st=s}catch(e){}
 function save(){try{localStorage.setItem("felis",JSON.stringify(st))}catch(e){}}
-function head(){var x=st.xp||0;$("streak").innerHTML="Szint "+(Math.floor(x/50)+1)+"<br>"+x+" pont · sorozat "+st.streak}
-// tabs
-document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){
- document.querySelectorAll("nav button").forEach(function(x){x.setAttribute("aria-selected",x===b)});
- ["tanulas","szavak","ragozas","kviz","mondatok","alapok"].forEach(function(id){$(id).hidden=id!==b.dataset.t});
- if(b.dataset.t==="mondatok"&&!built)sent();
- if(b.dataset.t==="kviz"&&!$("qword").textContent)ask();
-}});
+function head(){var x=st.xp||0,done=Object.keys(st.lessonsDone||{}).filter(function(k){return st.lessonsDone[k]}).length;$("streak").innerHTML="<div class=\"gem-count\">◆ "+x+"</div><small>Szint "+(Math.floor(x/50)+1)+" · sorozat "+(st.streak||0)+"</small>";if($("profileXp"))$("profileXp").textContent=x;if($("profileLevel"))$("profileLevel").textContent=Math.floor(x/50)+1;if($("profileLessons"))$("profileLessons").textContent=done+" / "+C.lessons.length;if($("profileStreak"))$("profileStreak").textContent=st.streak||0}
+// Alsó navigáció és segédanyagok.
+function showPanel(id,navId){
+ var active=navId||((id==="tanulas"||id==="szavak"||id==="kviz"||id==="profil")?id:"profil");
+ document.querySelectorAll("nav button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.t===active)});
+ ["tanulas","szavak","ragozas","kviz","mondatok","alapok","profil"].forEach(function(section){$(section).hidden=section!==id});
+ if(id==="tanulas")renderCourse();if(id==="mondatok"&&!built)sent();if(id==="kviz"&&!$("qword").textContent)ask();head()
+}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){showPanel(b.dataset.t,b.dataset.t)}});
+document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){showPanel(b.dataset.open,"profil")}});
 // flashcards
 var ci=0,flip=false;
 function pending(){return W.map(function(w,i){return i}).filter(function(i){return !st.known[W[i][0]]})}
@@ -242,7 +275,7 @@ $("snext").onclick=function(){si++;sent()};
 
 // Cattus-inspired progression: grammar and vocabulary preview before mixed lesson practice.
 var C={units:[{name:"1. Az alapok",lessons:[0,1]},{name:"2. Főnevek és esetek",lessons:[2,3]},{name:"3. Igék és mondatok",lessons:[4,5]},{name:"4. Összetettebb alakok",lessons:[6,7]}],lessons:[
-{title:"Az alany és az alapszókincs",goal:"Ismerd fel, ki vagy mi végzi a cselekvést.",words:["puella","puer","femina","vir","amicus","aqua","terra","ambulo"],grammar:"A latin mondatban az alany többnyire nominativusban áll. A főnév végződése fontosabb, mint a szórend: ebből derül ki, milyen szerepet tölt be a szó.",example:"Puella ambulat. — A lány sétál.",check:["Melyik esetben áll általában a mondat alanya?","Nominativus","Accusativus","Genitivus","Ablativus",0]},
+{title:"Alanyeset és többes szám",goal:"Ismerd fel az alanyt és a főnevek többes számát.",words:["puella","puer","femina","vir","amicus","aqua","terra","ambulo"],grammar:"A latin mondatban az alany többnyire nominativusban áll. A főnév végződése jelöli a szerepét. Többes számban az első ragozás alanyesete -ae: puella → puellae.",example:"Puella ambulat. — A lány sétál. · Puellae ambulant. — A lányok sétálnak.",check:["Melyik esetben áll általában a mondat alanya?","Nominativus","Accusativus","Genitivus","Ablativus",0]},
 {title:"Az első főnévragozás",goal:"Alakítsd a nőnemű főneveket alanyból tárggyá.",words:["rosa","via","villa","silva","luna","stella","filia","puella","amo"],sentence:0,grammar:"Az első ragozás jellemzően -a végű főneveket tartalmaz. Egyes számban a tárgyeset ragja -am; többes számban az alany -ae, a tárgy -ās végű.",example:"rosa → rosam (a rózsa → a rózsát); puellae → puellās",check:["Melyik a rosa szó egyes számú tárgyesete?","rosam","rosae","rosā","rosārum",0]},
 {title:"A második főnévragozás",goal:"Használd helyesen az -us és -er végű főneveket.",words:["dominus","servus","puer","amicus","vir","bonus","magnus","parvus","laudo"],sentence:3,grammar:"A második ragozás hímnemű főnevei gyakran -us vagy -er végűek. A tárgyeset egyes számban -um: servus → servum. A puer alanyesete -er végű, tárgyesete puerum.",example:"Dominus servum laudat. — Az úr dicséri a rabszolgát.",check:["Mi a servus szó tárgyesete?","servum","servī","servō","servōrum",0]},
 {title:"A harmadik főnévragozás",goal:"Ismerd fel a változó tövű főneveket.",words:["rex","pater","mater","urbs","miles","nomen","tempus","specto"],sentence:6,grammar:"A harmadik ragozásban az alanyeset és a szótári második alak töve eltérhet. Ezért a szótár a nominativus mellett a genitivust is megadja: rex, regis — király; a tő: reg-.",example:"rex, regis → regem (királyt); urbs, urbis → urbem (várost)",check:["Miért fontos a rex, regis két alakot együtt megtanulni?","Mert a szótári alak megmutatja a főnév tövét.","Mert az egyik többes szám.","Mert az egyik ige.","Mert a latinban nincs ragozás.",0]},
@@ -253,22 +286,40 @@ var C={units:[{name:"1. Az alapok",lessons:[0,1]},{name:"2. Főnevek és esetek"
 ]};
 var lessonSession=null;if(!st.lessonsDone)st.lessonsDone={};
 function isUnlocked(i){return i===0||!!st.lessonsDone[i-1]}
+var TOPICS=[
+ {name:"Többes szám",icon:"✿",color:"#c2185b",lesson:0,center:true},
+ {name:"Tárgyeset",icon:"▰",color:"#2588d8",lesson:1},{name:"Igék",icon:"♫",color:"#f47b00",lesson:4},
+ {name:"Birtokos eset",icon:"✳",color:"#8523a8",lesson:3},{name:"Részes eset",icon:"❧",color:"#168d25"},
+ {name:"Ablativus",icon:"◢",color:"#2588d8",lesson:6,center:true},
+ {name:"II. főnévragozás",icon:"♟",color:"#8523a8",lesson:2},{name:"Melléknevek",icon:"☾",color:"#8523a8"},
+ {name:"Birtokos névmások",icon:"⚑",color:"#168d25",center:true},
+ {name:"Szenvedő szerkezet",icon:"♥",color:"#c2185b"},{name:"II. igeragozás",icon:"!",color:"#f47b00",lesson:5},
+ {name:"III. főnévragozás",icon:"●",color:"#c2185b",lesson:3},{name:"Melléknevek II.",icon:"♧",color:"#f47b00"},
+ {name:"III. igeragozás",icon:"✉",color:"#2588d8",center:true},
+ {name:"Számnevek",icon:"ⅠⅡⅢ",color:"#858585",center:true},
+ {name:"IV. főnévragozás",icon:"◉",color:"#858585"},{name:"IV. igeragozás",icon:"♫",color:"#858585"},
+ {name:"V. főnévragozás",icon:"☼",color:"#858585",center:true},
+ {name:"Személyes névmások",icon:"✉",color:"#858585"},{name:"Mutató névmások",icon:"☁",color:"#858585"},
+ {name:"Középfok",icon:"♧",color:"#858585"},{name:"Felsőfok",icon:"♥",color:"#858585"},
+ {name:"Múlt idő",icon:"▤",color:"#858585",lesson:7},{name:"Jövő idő",icon:"⛵",color:"#858585",lesson:7},
+ {name:"Melléknévi igenév",icon:"☼",color:"#858585",center:true},
+ {name:"Vonatkozó névmások",icon:"❧",color:"#858585"},{name:"Kérdő névmások",icon:"?",color:"#858585"},
+ {name:"Határozatlan névmások",icon:"☼",color:"#858585",center:true},
+ {name:"Ismétlés",icon:"▣",color:"#858585",route:"review",center:true}
+];
 function renderCourse(){
- var done=Object.keys(st.lessonsDone||{}).filter(function(k){return st.lessonsDone[k]}).length;
- $("courseProg").textContent=done+" / "+C.lessons.length+" lecke";$("courseBar").style.width=(100*done/C.lessons.length)+"%";
- var root=$("courseUnits");root.innerHTML="";
- C.units.forEach(function(unit){
-  var box=document.createElement("div");box.className="unit";var title=document.createElement("div");title.className="unit-title";var h=document.createElement("h3");h.textContent=unit.name;title.appendChild(h);
-  var count=document.createElement("span");count.textContent=unit.lessons.filter(function(i){return st.lessonsDone[i]}).length+" / "+unit.lessons.length;title.appendChild(count);box.appendChild(title);
-  unit.lessons.forEach(function(i){
-   var l=C.lessons[i],done=!!st.lessonsDone[i],open=isUnlocked(i),b=document.createElement("button");b.className="lesson-node"+(done?" done":"")+(open?"":" locked");b.disabled=!open;
-   var n=document.createElement("span");n.className="node-number";n.textContent=done?"✓":(open?"▶":"🔒");b.appendChild(n);
-   var copy=document.createElement("span");copy.className="node-copy";var strong=document.createElement("strong");strong.textContent=(i+1)+". "+l.title;copy.appendChild(strong);
-   var small=document.createElement("small");small.textContent=done?"Teljesítve · újra gyakorolható":(open?l.goal:"Teljesítsd az előző leckét a feloldáshoz");copy.appendChild(small);b.appendChild(copy);
-   var arrow=document.createElement("span");arrow.className="node-arrow";arrow.textContent=done?"↻":(open?"›":"");b.appendChild(arrow);b.onclick=function(){openLesson(i)};box.appendChild(b)
-  });root.appendChild(box)
- })
+ var root=$("topicGrid");root.innerHTML="";
+ TOPICS.forEach(function(t){
+  var open=t.route==="review"?Object.keys(st.lessonsDone||{}).filter(function(k){return st.lessonsDone[k]}).length>=C.lessons.length:(typeof t.lesson==="number"&&isUnlocked(t.lesson));
+  var done=typeof t.lesson==="number"&&!!st.lessonsDone[t.lesson];
+  var b=document.createElement("button");b.className="topic-node"+(t.center?" center":"")+(open?" active":" locked")+(done?" done":"");b.disabled=!open;b.setAttribute("aria-label",t.name+(open?" megnyitása":" zárolva"));
+  var orb=document.createElement("span");orb.className="topic-orb";orb.style.setProperty("--topic",t.color);orb.textContent=t.icon;b.appendChild(orb);
+  var label=document.createElement("span");label.className="topic-name";label.textContent=t.name;b.appendChild(label);
+  if(open)b.onclick=function(){if(t.route==="review")showPanel("kviz","kviz");else openLesson(t.lesson)};
+  root.appendChild(b)
+ });
 }
+
 function openLesson(i){
  if(!isUnlocked(i))return;lessonSession=null;$("courseMap").hidden=true;$("lessonPage").hidden=false;$("lessonIntro").hidden=false;$("lessonExercise").hidden=true;$("lessonComplete").hidden=true;
  var l=C.lessons[i];$("lessonUnit").textContent=C.units.filter(function(u){return u.lessons.indexOf(i)>=0})[0].name;$("lessonTitle").textContent=(i+1)+". "+l.title;$("lessonGoal").textContent=l.goal;$("lessonGrammar").textContent=l.grammar;$("lessonExample").textContent=l.example;
