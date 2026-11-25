@@ -2,13 +2,15 @@ package hu.cattus.hungaricus;
 import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.*;
-import android.view.WindowInsets;\nimport android.view.WindowManager;
+import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.graphics.Insets;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 public final class MainActivity extends Activity {
  @Override public void onCreate(Bundle b) {
- super.onCreate(b);\n getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+ super.onCreate(b);
+ getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
  WebView w=new WebView(this);
  WebSettings s=w.getSettings();
  s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
