@@ -542,10 +542,9 @@ function renderTask(){
  }
 }
 function chooseTask(button,ok,success,answer){
- if(button.disabled)return;Array.prototype.forEach.call($("taskOptions").children,function(b){b.disabled=true});button.classList.add(ok?"ok":"bad");
- if(ok){$("taskFeedback").textContent=success;$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+3;st.streak=(st.streak||0)+1}
- else{$("taskFeedback").textContent="Nem egészen. Helyes válasz: "+answer;$("taskFeedback").style.color="var(--bad)";st.streak=0}
- save();head();addAction("Folytatás",nextTask,true)
+ if(button.disabled)return;
+ if(!ok){button.disabled=true;button.classList.add("bad");$("taskFeedback").textContent="Nem egészen. Próbáld újra a többi lehetőség közül.";$("taskFeedback").style.color="var(--bad)";st.streak=0;save();head();return}
+ Array.prototype.forEach.call($("taskOptions").children,function(b){b.disabled=true});button.classList.add("ok");$("taskFeedback").textContent=success;$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+3;st.streak=(st.streak||0)+1;save();head();addAction("Folytatás",nextTask,true)
 }
 function syncExerciseViewport(){var vv=window.visualViewport;if(vv){document.documentElement.style.setProperty("--vv-top",vv.offsetTop+"px");document.documentElement.style.setProperty("--vv-height",vv.height+"px")}}
 function keepTaskInputVisible(){var el=$("taskInput");if(!el||el.hidden||el.disabled||document.activeElement!==el)return;document.body.classList.add("keyboard-open");syncExerciseViewport();var vv=window.visualViewport,top=vv?vv.offsetTop:0,bottom=vv?vv.offsetTop+vv.height:window.innerHeight,rect=el.getBoundingClientRect(),gap=16;if(rect.bottom>bottom-gap||rect.top<top+gap){el.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(function(){var r=el.getBoundingClientRect(),v=window.visualViewport,t=v?v.offsetTop:0,b=v?v.offsetTop+v.height:window.innerHeight,container=$("lessonExercise");if(r.bottom>b-12)container.scrollTop+=r.bottom-b+18;else if(r.top<t+12)container.scrollTop-=t+12-r.top},250)}}
