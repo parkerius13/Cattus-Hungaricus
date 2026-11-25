@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Felis – latin tanulás magyarul</title>
 
 <style>
@@ -61,7 +61,7 @@ h2{font-size:19px;margin:0 0 6px}
 .back-link{border:0;background:none;color:var(--accent);font:800 15px Nunito,sans-serif;padding:6px 0 14px;cursor:pointer}.vocab-list{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}.vocab-row{display:flex;justify-content:space-between;gap:6px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.vocab-row b{font-family:Georgia,serif}
 .lesson-exercise{min-height:350px}.lesson-exercise h3{font-size:21px;margin:12px 0}.latin-prompt{font:600 24px Cinzel,Georgia,serif;text-align:center;margin:18px 0;color:var(--accent)}
 .lesson-complete{text-align:center;padding:30px 22px}.complete-mark{margin:auto auto 12px;border-radius:50%;width:58px;height:58px;display:grid;place-items:center;background:var(--ok);color:white;font-size:30px;font-weight:800}
-.answer-input{display:block;width:100%;min-height:56px;margin:18px 0 10px;padding:13px 15px;border:2px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink);font:600 19px Cinzel,Georgia,serif;outline:none}.answer-input:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}.answer-input[hidden]{display:none}
+.answer-input{display:block;width:100%;min-height:56px;margin:18px 0 10px;scroll-margin-top:24px;scroll-margin-bottom:calc(env(safe-area-inset-bottom,0px) + 28px);padding:13px 15px;border:2px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink);font:600 19px Cinzel,Georgia,serif;outline:none}.answer-input:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}.answer-input[hidden]{display:none}
 #taskActions{margin-top:16px}#lessonStart,#grammarOpen{width:100%;margin:0 0 14px}
 @media(max-width:420px){nav button{font-size:12px}.vocab-list{grid-template-columns:1fr}.lesson-node{padding:12px}}
 
@@ -531,11 +531,11 @@ function renderTask(){
  }else if(t.type==="grammar"){
   $("taskPrompt").textContent=t.check[0];$("taskDetail").textContent="";var correct=t.check[t.check[5]+1],options=t.check.slice(1,5).map(function(choice){return {text:choice,correct:choice===correct}});shuf(options).forEach(function(option){var b=document.createElement("button");b.className="opt";b.textContent=option.text;b.onclick=function(){chooseTask(b,option.correct,"Helyes.",correct)};box.appendChild(b)})
  }else if(t.type==="inflection"){
-  $("taskPrompt").textContent="Írd be a kért alakot!";$("taskDetail").textContent=t.data[0];input.hidden=false;input.value="";input.placeholder="Írd be a latin alakot";input.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();checkInflection()}};
-  $("taskFeedback").textContent="Figyeld meg a szótári alakot, az esetet vagy az ige személyét és számát.";addAction("Ellenőrzés",checkInflection,true);addAction("Törlés",function(){input.value="";input.focus()},false);setTimeout(function(){input.focus()},100)
+  $("taskPrompt").textContent="Írd be a kért alakot!";$("taskDetail").textContent=t.data[0];input.hidden=false;input.value="";input.placeholder="Írd be a latin alakot";input.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();checkInflection()}};input.onfocus=function(){setTimeout(keepTaskInputVisible,120)};
+  $("taskFeedback").textContent="Figyeld meg a szótári alakot, az esetet vagy az ige személyét és számát.";addAction("Ellenőrzés",checkInflection,true);addAction("Törlés",function(){input.value="";input.focus()},false);setTimeout(function(){input.focus();setTimeout(keepTaskInputVisible,180)},100)
  }else{
-  var q=S[t.index],hint=SENTENCE_WORDS[t.index].map(function(k){return dictionaryForm(k)}).join(" · ");$("taskPrompt").textContent="Írd be latinul!";$("taskDetail").textContent=q[0];$("taskDictionary").textContent="Szótári alakok: "+hint;$("taskDictionary").hidden=false;input.hidden=false;input.value="";input.placeholder="Írd be a latin mondatot";input.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();checkSentence()}};
-  $("taskFeedback").textContent="A szórend szabad; a szóalakokra és a ragokra figyelj.";addAction("Ellenőrzés",checkSentence,true);addAction("Törlés",function(){input.value="";input.focus()},false);setTimeout(function(){input.focus()},100)
+  var q=S[t.index],hint=SENTENCE_WORDS[t.index].map(function(k){return dictionaryForm(k)}).join(" · ");$("taskPrompt").textContent="Írd be latinul!";$("taskDetail").textContent=q[0];$("taskDictionary").textContent="Szótári alakok: "+hint;$("taskDictionary").hidden=false;input.hidden=false;input.value="";input.placeholder="Írd be a latin mondatot";input.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();checkSentence()}};input.onfocus=function(){setTimeout(keepTaskInputVisible,120)};
+  $("taskFeedback").textContent="A szórend szabad; a szóalakokra és a ragokra figyelj.";addAction("Ellenőrzés",checkSentence,true);addAction("Törlés",function(){input.value="";input.focus()},false);setTimeout(function(){input.focus();setTimeout(keepTaskInputVisible,180)},100)
  }
 }
 function chooseTask(button,ok,success,answer){
@@ -544,9 +544,11 @@ function chooseTask(button,ok,success,answer){
  else{$("taskFeedback").textContent="Nem egészen. Helyes válasz: "+answer;$("taskFeedback").style.color="var(--bad)";st.streak=0}
  save();head();addAction("Folytatás",nextTask,true)
 }
+function keepTaskInputVisible(){var el=$("taskInput");if(!el||el.hidden||el.disabled||document.activeElement!==el)return;var vv=window.visualViewport,top=vv?vv.offsetTop:0,bottom=vv?vv.offsetTop+vv.height:window.innerHeight,rect=el.getBoundingClientRect(),gap=24;if(rect.bottom>bottom-gap)window.scrollBy({top:rect.bottom-bottom+gap,behavior:"smooth"});else if(rect.top<top+gap)window.scrollBy({top:rect.top-top-gap,behavior:"smooth"})}
+if(window.visualViewport){window.visualViewport.addEventListener("resize",function(){setTimeout(keepTaskInputVisible,120)});window.visualViewport.addEventListener("scroll",function(){setTimeout(keepTaskInputVisible,80)})}
 function normalizedSentence(text){return text.toLowerCase().normalize("NFD").replace(/[\u0304]/g,"").normalize("NFC").replace(/[.,;:!?]/g," ").trim().split(/\s+/).filter(Boolean).sort().join(" ")}
 function normalizedForm(text){return String(text||"").toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"").normalize("NFC").trim().replace(/[.,;:!?]$/g,"")}
-function checkInflection(){var t=lessonSession.tasks[lessonSession.at],typed=$("taskInput").value.trim();if(!typed){$("taskFeedback").textContent="Írd be a kért alakot.";$("taskFeedback").style.color="var(--bad)";return}var correct=t.data[1].split("|").some(function(a){return normalizedForm(a)===normalizedForm(typed)});if(correct){input.disabled=true;$("taskFeedback").textContent="Helyes! "+t.data[2];$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+5;st.streak=(st.streak||0)+1;save();head();$("taskActions").innerHTML="";addAction("Folytatás",nextTask,true)}else{$("taskFeedback").textContent="Még nem jó. Helyes alak: "+t.data[1].split("|")[0]+". "+t.data[2];$("taskFeedback").style.color="var(--bad)";st.streak=0;save();head()}}
+function checkInflection(){var t=lessonSession.tasks[lessonSession.at],typed=$("taskInput").value.trim();if(!typed){$("taskFeedback").textContent="Írd be a kért alakot.";$("taskFeedback").style.color="var(--bad)";return}var correct=t.data[1].split("|").some(function(a){return normalizedForm(a)===normalizedForm(typed)});if(correct){$("taskInput").disabled=true;$("taskFeedback").textContent="Helyes! "+t.data[2];$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+5;st.streak=(st.streak||0)+1;save();head();$("taskActions").innerHTML="";addAction("Folytatás",nextTask,true)}else{$("taskFeedback").textContent="Még nem jó. Helyes alak: "+t.data[1].split("|")[0]+". "+t.data[2];$("taskFeedback").style.color="var(--bad)";st.streak=0;save();head()}}
 function checkSentence(){
  var s=lessonSession,t=s.tasks[s.at],q=S[t.index],typed=$("taskInput").value.trim();
  if(!typed){$("taskFeedback").textContent="Írd be a latin mondatot.";$("taskFeedback").style.color="var(--bad)";return}
