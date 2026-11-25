@@ -24,11 +24,11 @@ jobs:
           fi
       - run: gradle --no-daemon :app:assembleDebug
       - run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Cattus_Hungaricus.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose Cattus_Hungaricus.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Cattus_Hungaricus.apk | tee permissions.txt
+          cp app/build/outputs/apk/debug/app-debug.apk Felis_Magyar.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose Felis_Magyar.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Felis_Magyar.apk | tee permissions.txt
           ! grep -q 'uses-permission:' permissions.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Cattus_Hungaricus_APK
-          path: Cattus_Hungaricus.apk
+          name: Felis_Magyar_APK
+          path: Felis_Magyar.apk

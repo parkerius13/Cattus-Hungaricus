@@ -1,17 +1,227 @@
-<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cattus Hungaricus</title><style> *{box-sizing:border-box}body{font:17px system-ui;margin:0;background:#f5f3eb;color:#20382e}main{max-width:800px;margin:auto;padding:20px}header{background:#234b3b;color:white;padding:22px}button,select,input{font:inherit;padding:12px;border:1px solid #81988a;border-radius:9px;background:transparent;color:inherit}button{cursor:pointer;margin:4px}button:hover{background:#b8cdbb;color:#152c20}nav{display:flex;flex-wrap:wrap}article{border:1px solid #a7b6aa;border-radius:12px;padding:20px;margin:14px 0}h2{margin-top:0}small{opacity:.8} .dark{background:#17241e;color:#e5eee6}.ink{background:white;color:black} .answer{display:block;width:100%;text-align:left}progress{width:100%;accent-color:#397653}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #aaa;padding:8px;text-align:left} </style><header><h1>🐈 Cattus Hungaricus</h1>Latin nyelvtanulás magyarul</header><main><nav id="nav"></nav><div id="view"></div></main><script>
-const lessons=[
-['Alapok','A latin mondat szórendje viszonylag szabad. Az alany rendszerint nominativusban, a közvetlen tárgy accusativusban áll. A személyrag gyakran önmagában jelzi az alanyt.','Puella rosam portat. – A lány rózsát visz.','rosam','Accusativus','Nominativus','Dativus'],
-['I. declinatio','Többnyire nőnemű főnevek. Egyes szám: -a, -ae, -ae, -am, -ā; többes szám: -ae, -arum, -is, -as, -is. Sorrend: nominativus, genitivus, dativus, accusativus, ablativus.','Puellae rosam do. – Rózsát adok a lánynak.','puellae (ebben a mondatban)','Dativus','Accusativus','Ablativus'],
-['II. declinatio','A dominus mintája: -us, -i, -o, -um, -o; többes: -i, -orum, -is, -os, -is. A bellum semlegesnemű: nominativusa és accusativusa azonos, többesben -a.','Servus dominum videt. – A szolga látja az urat.','dominum','Accusativus','Genitivus','Nominativus'],
-['III. declinatio','A rex, regis (király) mintája: rex, regis, regi, regem, rege; többes: reges, regum, regibus, reges, regibus. Az i-tövű szavak eltérhetnek.','Litterae regis adsunt. – A király levelei itt vannak.','regis','Genitivus','Dativus','Accusativus'],
-['IV–V. declinatio','Manus, manus (kéz): manus, manus, manui, manum, manu. Res, rei (dolog): res, rei, rei, rem, re.','Rem video. – Látom a dolgot.','rem','Accusativus','Dativus','Ablativus'],
-['Melléknevek','A melléknév nemben, számban és esetben egyezik a főnévvel. Bonus, bona, bonum az I–II. declinatiót követi.','Bonam terram videt. – Jó földet lát.','bonam','Accusativus','Genitivus','Nominativus'],
-['Igeragozás','A négy coniugatio infinitivusa: amare, monēre, legere, audire. Praesens activum személyragjai: -o/-m, -s, -t, -mus, -tis, -nt.','Litteras scribimus. – Leveleket írunk.','scribimus','Többes szám 1. személy','Egyes szám 3. személy','Többes szám 3. személy'],
-['Igeidők','Imperfectum: folyamatos múlt (amabam); perfectum: befejezett múlt (amavi); plusquamperfectum: előidejű múlt (amaveram).','Rex venit. – A király megérkezett (a szövegkörnyezettől függően jelen is lehet).','amaveram','Plusquamperfectum','Imperfectum','Futurum'],
-['Coniunctivus','A kötőmód többek között célhatározói mellékmondatban szerepel: ut + coniunctivus.','Venit ut regem videat. – Azért jön, hogy lássa a királyt.','videat','Coniunctivus','Indicativus','Imperativus'],
-['Participium','A participium praesens activum egyidejű cselekvést jelöl: legens (olvasó). A participium perfectum passivum általában előidejű: scriptus (megírt).','Litterae scriptae sunt. – A leveleket megírták.','scriptae','Participium perfectum passivum','Infinitivus','Participium praesens activum'],
-['Accusativus cum infinitivo','A függő kijelentés alanya accusativusban, állítmánya infinitivusban állhat.','Dicit regem venire. – Azt mondja, hogy a király jön.','regem','Az infinitivus alanya','A főmondat alanya','Határozó'],
-['Ablativus absolutus','Önálló ablativusi szerkezet, rendszerint főnév és participium alkotja.','Rege mortuo, bellum coepit. – A király halála után háború kezdődött.','rege mortuo','Ablativus absolutus','Accusativus cum infinitivo','Dativus'],
-['Okleveles latin','A királyi adománylevelek gyakori formulái: litterae donationales (adománylevél), nota infidelitatis (hűtlenség vétke), defectus seminis (magvaszakadás).','Rex possessionem nobili donavit. – A király birtokot adományozott a nemesnek.','nobili','Dativus','Nominativus','Genitivus'],
-['Diplomáciai latin','A misszilisekben gyakori a megszólítás és a címzés: Maiestas Vestra (Felségtek), litterae Vestrae (leveletek).','Litteras Maiestatis Vestrae accepimus. – Felségtek levelét megkaptuk.','accepimus','Perfectum, többes 1. személy','Praesens, egyes 1. személy','Futurum']];
-const vocab='puella:lány;rosa:rózsa;porto:visz;rex:király;regina:királyné;dominus:úr;servus:szolga;terra:föld;bellum:háború;pax:béke;litterae:levél;scribo:ír;lego:olvas;video:lát;audio:hall;venio:jön;do:ad;dono:adományoz;bonus:jó;malus:rossz;manus:kéz;res:dolog;urbs:város;oppidum:mezőváros;castrum:vár;possessio:birtok;curia:udvarház;nobilis:nemes;comes:ispán vagy gróf;comitatus:vármegye;donatio:adomány;consensus:beleegyezés;testimonium:tanúság;utilitas:haszon;infidelitas:hűtlenség;fidelitas:hűség;semen:mag, utód;defectus:hiány;maiestas:felség;episcopus:püspök;frater:testvér, szerzetes;exercitus:hadsereg;captivus:fogoly;obses:túsz;legatus:követ;nuntius:hírnök;foedus:szövetség;sigillum:pecsét;annus:év;dies:nap;filius:fiú;uxor:feleség;heres:örökös;portio:rész;notarius:jegyző;mandatum:parancs;salus:üdv, jólét;gratia:kegyelem;deus:isten;homo:ember;amicus:barát;inimicus:ellenség;pecunia:pénz;aurum:arany;argentum:ezüst;equus:ló;miles:katona;via:út;aqua:víz;ignis:tűz;mons:hegy;flumen:folyó;silva:erdő;domus:ház;urbs:város;populus:nép;lex:törvény;ius:jog;judex:bíró;causa:ügy, ok;verbum:szó;tempus:idő;hodie:ma;heri:tegnap;cras:holnap;semper:mindig;numquam:soha;et:és;sed:de;aut:vagy;quia:mert;ut:hogy;si:ha;cum:amikor, együtt;per:által;ad:-hoz, -hez;ab:-tól, -től;pro:-ért;contra:ellen;inter:között'.split(';').map(x=>x.split(':'));let state;try{state=JSON.parse(localStorage.cattus)||{}}catch{state={}};state={done:[],right:0,total:0,known:[],theme:'',...state};function save(){try{localStorage.cattus=JSON.stringify(state)}catch{}}document.body.className=state.theme;const v=document.querySelector('#view');function nav(){document.querySelector('#nav').innerHTML=['Kezdőlap','Leckék','Szótár','Szókártyák','Kvíz','Statisztika','Beállítások'].map(x=>`<button onclick="go('${x}')">${x}</button>`).join('')}function go(x){if(x==='Kezdőlap')v.innerHTML=`<article><h2>Üdvözöllek!</h2><p>14 lecke a klasszikus és történeti latin alapjaihoz.</p><progress max="14" value="${state.done.length}"></progress><p>${state.done.length}/14 lecke teljesítve</p><button onclick="go('Leckék')">Tanulás indítása</button></article>`;if(x==='Leckék')v.innerHTML=lessons.map((l,i)=>`<article><button onclick="lesson(${i})">${state.done.includes(i)?'✓ ':''}${i+1}. ${l[0]}</button></article>`).join('');if(x==='Szótár'){v.innerHTML='<h2>Latin–magyar szótár</h2><input placeholder="Keresés" oninput="dict(this.value)"><div id="words"></div>';dict('')}if(x==='Szókártyák')flash();if(x==='Kvíz')quiz(Math.floor(Math.random()*lessons.length),false);if(x==='Statisztika')v.innerHTML=`<article><h2>Haladás</h2><p>Leckék: ${state.done.length}/14</p><p>Megjelölt ismert szavak: ${state.known.length}/${vocab.length}</p><p>Helyes válaszok: ${state.right}/${state.total} (${state.total?Math.round(100*state.right/state.total):0}%)</p></article>`;if(x==='Beállítások')v.innerHTML='<h2>Megjelenítés</h2>'+['','dark','ink'].map((t,i)=>`<button onclick="theme('${t}')">${['Világos','Sötét','E-ink'][i]}</button>`).join('')+'<p>A haladás helyben tárolódik, ha a böngésző engedélyezi.</p>'}function theme(t){state.theme=t;document.body.className=t;save()}function dict(q){document.querySelector('#words').innerHTML='<table>'+vocab.filter(w=>w.join(' ').toLowerCase().includes(q.toLowerCase())).map(w=>`<tr><td>${w[0]}</td><td>${w[1]}</td></tr>`).join('')+'</table>'}function lesson(i){let l=lessons[i];v.innerHTML=`<article><small>${i+1}. lecke</small><h2>${l[0]}</h2><p>${l[1]}</p><p><b>${l[2]}</b></p><button onclick="quiz(${i},true)">Gyakorlás</button></article>`}function quiz(i,learn){let l=lessons[i],opts=l.slice(4).sort(()=>Math.random()-.5);v.innerHTML=`<article><h2>${l[0]}</h2><p>${l[2].split(' – ')[0]}</p><p>Mi a következő alak nyelvtani szerepe vagy besorolása? <b>${l[3]}</b></p>${opts.map(o=>`<button class="answer" onclick="answer(${i},${o===l[4]},${learn})">${o}</button>`).join('')}<div id="feedback"></div></article>`}function answer(i,ok,learn){state.total++;if(ok){state.right++;if(learn&&!state.done.includes(i))state.done.push(i)}save();document.querySelectorAll('.answer').forEach(b=>b.disabled=true);document.querySelector('#feedback').innerHTML=`<p><b>${ok?'Helyes!':'Helytelen. Helyes válasz: '+lessons[i][4]}</b></p><p>${lessons[i][1]}</p><button onclick="${learn?(ok?"go('Leckék')":`quiz(${i},true)`):`quiz(${(i+1)%lessons.length},false)`}">Tovább</button>`}function flash(){let pool=vocab.filter(w=>!state.known.includes(w[0]));if(!pool.length)pool=vocab;let w=pool[Math.floor(Math.random()*pool.length)];v.innerHTML=`<article><h2>${w[0]}</h2><p id="meaning">Gondolj a magyar jelentésre!</p><button onclick="document.querySelector('#meaning').textContent='${w[1]}'">Felfedés</button><button onclick="known('${w[0]}')">Ismerem</button><button onclick="flash()">Következő</button></article>`}function known(w){if(!state.known.includes(w))state.known.push(w);save();flash()}nav();go('Kezdőlap');</script></html>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Felis – latin tanulás magyarul</title>
+
+<style>
+:root{--bg:#eceff1;--surface:#fff;--ink:#1b2a3a;--muted:#5d6b78;--line:#d3d9de;--accent:#2f7f86;--accent-ink:#fff;--gold:#b9861c;--ok:#2e7d4f;--bad:#b3392b;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13202b;--surface:#1c2e3c;--ink:#e8eef2;--muted:#9fb0bd;--line:#2d4252;--accent:#58b3ba;--accent-ink:#0e1a22;--gold:#e0b04a;--ok:#5cc08a;--bad:#ee7b6c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13202b;--surface:#1c2e3c;--ink:#e8eef2;--muted:#9fb0bd;--line:#2d4252;--accent:#58b3ba;--accent-ink:#0e1a22;--gold:#e0b04a;--ok:#5cc08a;--bad:#ee7b6c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 Nunito,system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font:600 26px Cinzel,Georgia,serif;letter-spacing:.06em;margin:0}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.streak{font-weight:800;color:var(--gold);text-align:right;font-size:14px}
+nav{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:18px;position:sticky;top:8px;z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--muted);font:600 13.5px Nunito,sans-serif;padding:10px 2px;border-radius:10px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+section[hidden]{display:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:14px}
+.flash{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;width:100%;font:inherit;color:inherit}
+.lat{font:600 40px Cinzel,Georgia,serif;margin:0}
+.hu{font-size:30px;font-weight:800;margin:0}
+.note{color:var(--muted);font-size:15px;margin:8px 0 0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:130px;border:2px solid var(--accent);background:none;color:var(--accent);font:800 16px Nunito,sans-serif;padding:12px;border-radius:12px;cursor:pointer}
+.btn.fill{background:var(--accent);color:var(--accent-ink)}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:4px 0 14px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+table{border-collapse:collapse;width:100%}
+th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:14px}
+td.l{font-weight:800}
+.tw{overflow-x:auto}
+.end{color:var(--accent);font-weight:800}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pill{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:20px;font:600 15px Nunito,sans-serif;cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:600 18px Nunito,sans-serif;padding:14px;border-radius:12px;margin-top:10px;cursor:pointer}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--surface))}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--surface))}
+.fb{font-weight:800;margin:12px 0 0;min-height:1.5em}
+h2{font-size:19px;margin:0 0 6px}
+.lesson p{margin:6px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Felis 🐈</h1><p class="sub">Latin tanulás magyarul</p></div>
+  <div class="streak" id="streak" aria-live="polite">Sorozat: 0</div>
+</header>
+<nav role="tablist" aria-label="Fő részek">
+  <button role="tab" aria-selected="true" data-t="szavak">Szavak</button>
+  <button role="tab" aria-selected="false" data-t="ragozas">Ragozás</button>
+  <button role="tab" aria-selected="false" data-t="kviz">Kvíz</button>
+  <button role="tab" aria-selected="false" data-t="mondatok">Mondatok</button>
+  <button role="tab" aria-selected="false" data-t="alapok">Alapok</button>
+</nav>
+
+<section id="szavak">
+  <div class="sub" id="prog"></div>
+  <div class="bar"><i id="pbar"></i></div>
+  <button class="card flash" id="flash" aria-label="Kártya megfordítása"></button>
+  <div class="row">
+    <button class="btn" id="again">Még gyakorlom</button>
+    <button class="btn fill" id="known">Tudom</button>
+  </div>
+  <p class="note">Koppints a kártyára a megfordításhoz. A haladásod ezen az eszközön megmarad.</p>
+  <p><button class="btn" id="reset" style="flex:none">Haladás törlése</button></p>
+</section>
+
+<section id="ragozas" hidden>
+  <div class="pills" id="tabs" role="group" aria-label="Táblázat kiválasztása"></div>
+  <div class="card"><h2 id="ttitle"></h2><p class="note" id="tnote"></p><div class="tw"><table id="tbl"></table></div></div>
+</section>
+
+<section id="kviz" hidden>
+  <div class="pills">
+    <button class="pill" id="d1" aria-pressed="true">Latin → magyar</button>
+    <button class="pill" id="d2" aria-pressed="false">Magyar → latin</button>
+  </div>
+  <div class="card">
+    <p class="sub" id="qscore"></p>
+    <p class="lat" id="qword" style="margin:8px 0 4px"></p>
+    <div id="qopts"></div>
+    <p class="fb" id="fb" aria-live="polite"></p>
+    <button class="btn fill" id="next" style="margin-top:8px;display:none">Következő</button>
+  </div>
+</section>
+
+<section id="mondatok" hidden>
+  <div class="card"><h2>Fordítsd latinra</h2><p class="note">A latinban szabad a szórend, de az ige általában a mondat végén áll. Állítsd össze a mondatot a szavakból.</p>
+  <p class="hu" id="sq" style="font-size:22px;margin:10px 0"></p><div class="pills" id="sbank"></div>
+  <p class="lat" id="sout" style="font-size:24px;min-height:1.6em"></p>
+  <div class="row"><button class="btn" id="sclear">Törlés</button><button class="btn fill" id="scheck">Ellenőrzés</button></div>
+  <p class="fb" id="sfb" aria-live="polite"></p><button class="btn fill" id="snext" style="margin-top:8px;display:none">Következő mondat</button></div>
+</section>
+
+<section id="alapok" hidden>
+  <div class="card lesson"><h2>Nincs névelő</h2><p>A latinban nincs a, az vagy egy. A <b>puella</b> jelentheti azt, hogy „a lány”, „egy lány” vagy egyszerűen „lány”. A szövegből derül ki.</p></div>
+  <div class="card lesson"><h2>A végződés hordozza a jelentést</h2><p>A magyarhoz hasonlóan a latin is ragoz. A <b>puella</b> alany, a <b>puellam</b> tárgy: a ragok mondják meg a mondatbeli szerepet, ezért a szórend szabadabb.</p></div>
+  <div class="card lesson"><h2>Az ige a mondat végére kerül</h2><p>Tipikus sorrend: alany – tárgy – ige. „Puella rosam amat” szó szerint: „lány rózsát szeret”, vagyis „A lány szereti a rózsát.”</p></div>
+  <div class="card lesson"><h2>Az igevég megmutatja a személyt</h2><p>Az <b>amō</b> jelentése „szeretek”, az <b>amās</b> „szeretsz”: külön személyes névmás nem is kell, akárcsak a magyarban.</p></div>
+  <div class="card lesson"><h2>A vonás (makron)</h2><p>A betű feletti vonás hosszú magánhangzót jelöl: <b>amās</b>. Kiejtésnél a hosszú hang tovább tart. A latin szavakat úgy olvasd, ahogy írják.</p></div>
+  <div class="card lesson"><h2>Igeidők a végződésekből</h2><p>Folyamatos múlt: <b>amābam</b> („szerettem”), a -bā- jelöli. Befejezett múlt: <b>amāvī</b> („megszerettem, szerettem”), a -v- jelöli. Jövő: <b>amābō</b> („szeretni fogok”). A személyragok közben ugyanazt a mintát követik.</p></div>
+  <div class="card lesson"><h2>3. ragozás: a legváltozatosabb</h2><p>A <b>rex, regis</b> (király) szónak a tője az alanyesetben megváltozik: rex, de regis, regem. Ezért a latin szótár két alakot ad meg: az alanyesetet és a birtokos esetet.</p></div>
+</section>
+</div>
+
+<script>
+var W=[["puella","lány"],["puer","fiú"],["femina","nő"],["vir","férfi"],["dominus","úr, gazda"],["servus","rabszolga"],["amicus","barát"],["filia","lánya"],["aqua","víz"],["terra","föld"],["via","út"],["rosa","rózsa"],["villa","vidéki ház"],["silva","erdő"],["luna","hold"],["stella","csillag"],["amo","szeretek"],["laudo","dicsérek"],["video","látok"],["audio","hallok"],["habeo","van nekem"],["sum","vagyok"],["ambulo","sétálok"],["specto","nézek"],["rex","király"],["pater","apa"],["mater","anya"],["urbs","város"],["miles","katona"],["nomen","név"],["tempus","idő"],["bonus","jó"],["magnus","nagy"],["parvus","kicsi"],["pulcher","szép"],["scribo","írok"],["lego","olvasok"],["venio","jövök"],["dico","mondom"],["in","-ban/-ben (ablativusszal)"],["et","és"],["non","nem"]];
+var T={
+ puella:{t:"puella, -ae (lány) – 1. ragozás",n:"A -a végű, többnyire nőnemű főnevek.",s:"puell",r:[["Nominativus (alany)","a","ae"],["Genitivus (birtokos)","ae","ārum"],["Dativus (részes)","ae","īs"],["Accusativus (tárgy)","am","ās"],["Ablativus (eszköz, hely)","ā","īs"],["Vocativus (megszólítás)","a","ae"]]},
+ dominus:{t:"dominus, -ī (úr) – 2. ragozás",n:"A -us végű, többnyire hímnemű főnevek.",s:"domin",r:[["Nominativus (alany)","us","ī"],["Genitivus (birtokos)","ī","ōrum"],["Dativus (részes)","ō","īs"],["Accusativus (tárgy)","um","ōs"],["Ablativus (eszköz, hely)","ō","īs"],["Vocativus (megszólítás)","e","ī"]]},
+ amare:{t:"amāre (szeretni) – jelen idő",n:"Az 1. igeragozás: a tő amā-, a személyragok ugyanazok.",v:[["én","amō"],["te","amās"],["ő","amat"],["mi","amāmus"],["ti","amātis"],["ők","amant"]]},
+ habere:{t:"habēre (birtokolni) – jelen idő",n:"A 2. igeragozás: a tő habē-.",v:[["én","habeō"],["te","habēs"],["ő","habet"],["mi","habēmus"],["ti","habētis"],["ők","habent"]]},
+ esse:{t:"esse (lenni) – jelen idő",n:"Szabálytalan ige, ezt meg kell tanulni.",v:[["én","sum"],["te","es"],["ő","est"],["mi","sumus"],["ti","estis"],["ők","sunt"]]}
+};
+T.rex={t:"rex, regis (király) – 3. ragozás",n:"A tő az alanyesetben eltér (rex ↔ reg-). A teljes alakok = jellel kezdődnek a táblázatban.",s:"reg",r:[["Nominativus (alany)","=rex","=regēs"],["Genitivus (birtokos)","is","um"],["Dativus (részes)","ī","ibus"],["Accusativus (tárgy)","em","ēs"],["Ablativus (eszköz, hely)","e","ibus"],["Vocativus (megszólítás)","=rex","ēs"]]};
+T.imperf={t:"amāre – folyamatos múlt (imperfectum)",n:"Tő + -bā- + személyrag: szerettem, szerettél…",v:[["én","amābam"],["te","amābās"],["ő","amābat"],["mi","amābāmus"],["ti","amābātis"],["ők","amābant"]]};
+T.perf={t:"amāre – befejezett múlt (perfectum)",n:"A perfectum tő: amāv-. A személyragok eltérnek a jelen időtől.",v:[["én","amāvī"],["te","amāvistī"],["ő","amāvit"],["mi","amāvimus"],["ti","amāvistis"],["ők","amāvērunt"]]};
+T.fut={t:"amāre – jövő idő (futurum)",n:"Tő + -bi- + személyrag: szeretni fogok…",v:[["én","amābō"],["te","amābis"],["ő","amābit"],["mi","amābimus"],["ti","amābitis"],["ők","amābunt"]]};
+var NAV={puella:"puella",dominus:"dominus",rex:"rex",amare:"amāre",imperf:"amābam",perf:"amāvī",fut:"amābō",habere:"habēre",esse:"esse"};
+var $=function(i){return document.getElementById(i)};
+var st={known:{},streak:0,best:0};
+try{var s=JSON.parse(localStorage.getItem("felis")||"null");if(s)st=s}catch(e){}
+function save(){try{localStorage.setItem("felis",JSON.stringify(st))}catch(e){}}
+function head(){var x=st.xp||0;$("streak").innerHTML="Szint "+(Math.floor(x/50)+1)+"<br>"+x+" pont · sorozat "+st.streak}
+// tabs
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){
+ document.querySelectorAll("nav button").forEach(function(x){x.setAttribute("aria-selected",x===b)});
+ ["szavak","ragozas","kviz","mondatok","alapok"].forEach(function(id){$(id).hidden=id!==b.dataset.t});
+ if(b.dataset.t==="mondatok"&&!built)sent();
+ if(b.dataset.t==="kviz"&&!$("qword").textContent)ask();
+}});
+// flashcards
+var ci=0,flip=false;
+function pending(){return W.map(function(w,i){return i}).filter(function(i){return !st.known[W[i][0]]})}
+function card(){
+ var p=pending(),n=Object.keys(st.known).length;
+ $("prog").textContent="Megtanult szavak: "+n+" / "+W.length;
+ $("pbar").style.width=(100*n/W.length)+"%";
+ var f=$("flash");
+ if(!p.length){f.innerHTML='<p class="hu">Mind a '+W.length+' szót tudod! 🎉</p><p class="note">Törölheted a haladást, és kezdheted elölről.</p>';return}
+ if(p.indexOf(ci)<0)ci=p[0];
+ var w=W[ci];
+ f.innerHTML=flip?'<p class="hu">'+w[1]+'</p><p class="note">'+w[0]+'</p>':'<p class="lat">'+w[0]+'</p><p class="note">Koppints a fordításért</p>';
+}
+function step(k){
+ var p=pending();if(!p.length)return;
+ if(k){st.known[W[ci][0]]=1;st.xp=(st.xp||0)+2}save();head();
+ var q=pending();if(!q.length){card();return}
+ var nx=q.filter(function(i){return i>ci})[0];ci=nx===undefined?q[0]:nx;flip=false;card();
+}
+$("flash").onclick=function(){if(pending().length){flip=!flip;card()}};
+$("known").onclick=function(){step(true)};
+$("again").onclick=function(){step(false)};
+$("reset").onclick=function(){st.known={};save();ci=0;flip=false;card()};
+// tables
+function tbl(k){
+ var d=T[k],h="";
+ $("ttitle").textContent=d.t;$("tnote").textContent=d.n;
+ if(d.r){h="<tr><th>Eset</th><th>Egyes szám</th><th>Többes szám</th></tr>";
+  var f=function(e){return e[0]==="="?'<span class="end">'+e.slice(1)+"</span>":d.s+'<span class="end">'+e+"</span>"};
+  d.r.forEach(function(r){h+="<tr><td>"+r[0]+'</td><td class="l">'+f(r[1])+'</td><td class="l">'+f(r[2])+"</td></tr>"})}
+ else{h="<tr><th>Személy</th><th>Alak</th></tr>";d.v.forEach(function(r){h+="<tr><td>"+r[0]+'</td><td class="l">'+r[1]+"</td></tr>"})}
+ $("tbl").innerHTML=h;
+ document.querySelectorAll("#tabs .pill").forEach(function(p){p.setAttribute("aria-pressed",p.dataset.k===k)});
+}
+Object.keys(T).forEach(function(k){var b=document.createElement("button");b.className="pill";b.dataset.k=k;b.textContent=NAV[k];b.onclick=function(){tbl(k)};$("tabs").appendChild(b)});
+// quiz
+var dir=0,ans=null,right=0,total=0;
+function shuf(a){return a.slice().sort(function(){return Math.random()-.5})}
+function ask(){
+ var q=W[Math.floor(Math.random()*W.length)];ans=q;
+ var o=shuf(W.filter(function(w){return w!==q})).slice(0,3).concat([q]);o=shuf(o);
+ $("qword").textContent=q[dir];$("fb").textContent="";$("next").style.display="none";
+ $("qscore").textContent="Helyes: "+right+" / "+total;
+ var box=$("qopts");box.innerHTML="";
+ o.forEach(function(w){var b=document.createElement("button");b.className="opt";b.textContent=w[1-dir];
+  b.onclick=function(){
+   if($("next").style.display==="block")return;
+   total++;var ok=w===ans;
+   if(ok){right++;st.streak++;st.xp=(st.xp||0)+5;if(st.streak>st.best)st.best=st.streak;$("fb").textContent="Helyes!";$("fb").style.color="var(--ok)"}
+   else{st.streak=0;$("fb").textContent="Nem egészen: "+ans[0]+" = "+ans[1];$("fb").style.color="var(--bad)"}
+   Array.prototype.forEach.call(box.children,function(c){if(c.textContent===ans[1-dir])c.classList.add("ok")});
+   if(!ok)b.classList.add("bad");
+   save();head();$("qscore").textContent="Helyes: "+right+" / "+total;$("next").style.display="block";$("next").focus();
+  };box.appendChild(b)});
+}
+$("next").onclick=ask;
+function setDir(d){dir=d;$("d1").setAttribute("aria-pressed",d===0);$("d2").setAttribute("aria-pressed",d===1);ask()}
+$("d1").onclick=function(){setDir(0)};$("d2").onclick=function(){setDir(1)};
+// sentence builder
+var S=[["A lány szereti a rózsát.","Puella rosam amat"],["A fiú látja a barátot.","Puer amicum videt"],["A király hallja a lányokat.","Rex puellas audit"],["Az úr dicséri a rabszolgát.","Dominus servum laudat"],["A barátok az erdőben sétálnak.","Amici in silva ambulant"],["Az anya szereti a lányát.","Mater filiam amat"],["A katona nézi a várost.","Miles urbem spectat"],["A király a városban van.","Rex in urbe est"],["A lányok a csillagokat nézik.","Puellae stellas spectant"]];
+var built=0,si=0,pick=[],solved=false;
+function showS(){$("sout").textContent=pick.join(" ")||"…"}
+function sent(){
+ built=1;solved=false;pick=[];var q=S[si%S.length];
+ $("sq").textContent=q[0];$("sfb").textContent="";$("snext").style.display="none";
+ var bank=$("sbank");bank.innerHTML="";
+ shuf(q[1].split(" ")).forEach(function(w){var b=document.createElement("button");b.className="pill";b.textContent=w;
+  b.onclick=function(){if(b.disabled||solved)return;b.disabled=true;b.style.opacity=.4;pick.push(w);showS()};bank.appendChild(b)});
+ showS();
+}
+$("sclear").onclick=function(){if(!solved)sent2()};
+function sent2(){var k=si;sent();si=k}
+$("scheck").onclick=function(){
+ if(solved)return;var q=S[si%S.length],c=q[1].split(" ");
+ if(pick.length<c.length){$("sfb").style.color="var(--bad)";$("sfb").textContent="Használd fel az összes szót.";return}
+ var ok=pick.slice().sort().join()===c.slice().sort().join()&&pick[pick.length-1]===c[c.length-1];
+ if(ok){solved=true;st.xp=(st.xp||0)+10;st.streak++;save();head();$("sfb").style.color="var(--ok)";
+  $("sfb").textContent="Helyes! +10 pont"+(pick.join(" ")!==q[1]?" · Szokásos sorrend: "+q[1]:"");$("snext").style.display="block"}
+ else{st.streak=0;head();$("sfb").style.color="var(--bad)";$("sfb").textContent="Még nem jó. Figyelj a végződésekre, és az ige kerüljön a végére."}
+};
+$("snext").onclick=function(){si++;sent()};
+head();card();tbl("puella");
+</script>
+</body>
+</html>
