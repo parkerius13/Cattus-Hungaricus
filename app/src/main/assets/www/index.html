@@ -557,7 +557,7 @@ function checkSentence(){
  var s=lessonSession,t=s.tasks[s.at],q=S[t.index],typed=$("taskInput").value.trim();
  if(!typed){$("taskFeedback").textContent="Írd be a latin mondatot.";$("taskFeedback").style.color="var(--bad)";return}
  if(normalizedSentence(typed)===normalizedSentence(q[1])){if(!t.hadError)lessonSession.firstTryCorrect++;$("taskInput").disabled=true;$("taskFeedback").textContent="Helyes! A szórend változhat; a ragokat jól használtad. A mondat jelentése: "+q[0];$("taskFeedback").style.color="var(--ok)";st.xp=(st.xp||0)+5;st.streak=(st.streak||0)+1;save();head();$("taskActions").innerHTML="";addAction("Folytatás",nextTask,true)}
- else{t.hadError=true;$("taskFeedback").textContent="Nem jó. A helyes megoldás: "+q[1]+". A szórend változhat, de a ragoknak és az igealaknak egyezniük kell.";$("taskFeedback").style.color="var(--bad")}
+ else{t.hadError=true;$("taskFeedback").textContent="Nem jó. A helyes megoldás: "+q[1]+". A szórend változhat, de a ragoknak és az igealaknak egyezniük kell.";$("taskFeedback").style.color="var(--bad)"}
 }
 function nextTask(){lessonSession.at++;lessonSession.pick=[];if(lessonSession.at>=lessonSession.tasks.length)finishLesson();else renderTask()}
 function finishLesson(){
