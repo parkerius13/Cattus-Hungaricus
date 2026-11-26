@@ -23,9 +23,7 @@ nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink
 button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 section[hidden]{display:none}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:14px}
-.flash{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;width:100%;font:inherit;color:inherit}
 .lat{font:600 40px Cinzel,Georgia,serif;margin:0}
-.hu{font-size:30px;font-weight:800;margin:0}
 .note{color:var(--muted);font-size:15px;margin:8px 0 0}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .btn{flex:1;min-width:130px;border:2px solid var(--accent);background:none;color:var(--accent);font:800 16px Nunito,sans-serif;padding:12px;border-radius:12px;cursor:pointer}
@@ -97,7 +95,7 @@ section#tanulas{padding-top:8px}
 @media(max-width:420px){.topic-grid{row-gap:36px}.topic-node{min-height:155px;font-size:15px}.topic-orb{min-width:100px;min-height:100px}.wrap{padding-left:12px;padding-right:12px}}
 
 /* Témakörön belüli leckék */
-.group-heading{display:flex;align-items:center;gap:22px;min-height:60px;margin:0 4px 24px}.group-heading h2{font-size:23px;font-style:italic;font-weight:800;margin:0}.group-back{border:0;background:transparent;color:var(--accent);font-size:36px;line-height:1;padding:0 4px;cursor:pointer}.group-lessons{display:flex;flex-direction:column;gap:20px}.group-lesson{display:flex;align-items:center;gap:20px;width:100%;min-height:158px;padding:20px 24px;border:0;border-radius:20px;background:#fff;color:var(--ink);text-align:left;box-shadow:0 5px 18px rgba(30,20,25,.055);cursor:pointer}.group-lesson:disabled{opacity:.48;cursor:default}.group-orb{position:relative;display:grid;place-items:center;flex:none;width:96px;height:96px;border-radius:50%;background:var(--topic,#c2185b);color:#fff;font-size:39px}.group-orb:after{content:attr(data-num);position:absolute;right:-2px;top:4px;min-width:34px;height:34px;padding:3px;border-radius:18px;background:#fff;color:#303030;font-size:17px;text-align:center}.group-lesson.flashcard .group-orb:after{content:""}.group-copy{flex:1;min-width:0}.group-copy strong{display:block;font-size:20px;line-height:1.3}.group-copy span{display:block;font-size:18px;line-height:1.35;margin-top:10px}.group-copy em{display:block;color:#858585;font-size:16px;margin-top:8px}.group-status{flex:none;color:#f5b900;font-size:31px}.group-lesson.flashcard .group-status{color:#59a968}.group-empty{padding:24px;color:var(--muted);text-align:center}.sentence-dictionary{margin:12px 0;padding:12px 14px;border-radius:12px;background:#f6e9ed;color:#51454a;font-size:14px;line-height:1.55}.vocab-form{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.group-heading{display:flex;align-items:center;gap:22px;min-height:60px;margin:0 4px 24px}.group-heading h2{font-size:23px;font-style:italic;font-weight:800;margin:0}.group-back{border:0;background:transparent;color:var(--accent);font-size:36px;line-height:1;padding:0 4px;cursor:pointer}.group-lessons{display:flex;flex-direction:column;gap:20px}.group-lesson{display:flex;align-items:center;gap:20px;width:100%;min-height:158px;padding:20px 24px;border:0;border-radius:20px;background:#fff;color:var(--ink);text-align:left;box-shadow:0 5px 18px rgba(30,20,25,.055);cursor:pointer}.group-lesson:disabled{opacity:.48;cursor:default}.group-orb{position:relative;display:grid;place-items:center;flex:none;width:96px;height:96px;border-radius:50%;background:var(--topic,#c2185b);color:#fff;font-size:39px}.group-orb:after{content:attr(data-num);position:absolute;right:-2px;top:4px;min-width:34px;height:34px;padding:3px;border-radius:18px;background:#fff;color:#303030;font-size:17px;text-align:center}.group-copy{flex:1;min-width:0}.group-copy strong{display:block;font-size:20px;line-height:1.3}.group-copy span{display:block;font-size:18px;line-height:1.35;margin-top:10px}.group-copy em{display:block;color:#858585;font-size:16px;margin-top:8px}.group-status{flex:none;color:#f5b900;font-size:31px}.group-empty{padding:24px;color:var(--muted);text-align:center}.sentence-dictionary{margin:12px 0;padding:12px 14px;border-radius:12px;background:#f6e9ed;color:#51454a;font-size:14px;line-height:1.55}.vocab-form{display:block;color:var(--muted);font-size:12px;line-height:1.4}
 @media(max-width:420px){.group-lesson{gap:16px;min-height:142px;padding:16px}.group-orb{width:84px;height:84px}.group-copy strong{font-size:18px}.group-copy span{font-size:16px}.group-copy em{font-size:14px}}
 
 </style>
@@ -110,8 +108,7 @@ section#tanulas{padding-top:8px}
 </header>
 <nav id="mainNav" role="tablist" aria-label="Főmenü" class="bottom-nav">
   <button role="tab" aria-label="Főoldal" title="Főoldal" aria-selected="true" data-t="tanulas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5v10h-6v-6H9v6H3z"/></svg></button>
-  <button role="tab" aria-label="Szótár" title="Szótár" aria-selected="false" data-t="szavak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h6l2 2h8v11H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 11h8M8 14.5h8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-  <button role="tab" aria-label="Ismétlés" title="Ismétlés" aria-selected="false" data-t="kviz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.3l6.3-.9z"/></svg></button>
+    <button role="tab" aria-label="Ismétlés" title="Ismétlés" aria-selected="false" data-t="kviz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.3l6.3-.9z"/></svg></button>
   <button role="tab" aria-label="Profil" title="Profil" aria-selected="false" data-t="profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M4 21c.4-4.2 3.5-6.5 8-6.5s7.6 2.3 8 6.5z"/></svg></button>
 </nav>
 
@@ -130,18 +127,6 @@ section#tanulas{padding-top:8px}
  <div class="card lesson-exercise" id="lessonExercise" hidden><div class="exercise-topbar"><button id="exerciseBack" type="button" aria-label="Kilépés a feladatból">←</button><strong id="exerciseTitle">Gyakorlófeladat</strong></div><p class="sub" id="lessonStep"></p><div class="bar"><i id="lessonBar"></i></div><h3 id="taskPrompt"></h3><p class="latin-prompt" id="taskDetail"></p><p class="sentence-dictionary" id="taskDictionary" hidden></p><div id="taskOptions"></div><input id="taskInput" class="answer-input" type="text" maxlength="120" placeholder="Írd be a latin mondatot" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" hidden><p class="fb" id="taskFeedback" aria-live="polite"></p><div class="row" id="taskActions"></div></div>
  <div class="card lesson-complete" id="lessonComplete" hidden><div class="complete-mark">✓</div><h2>Lecke kész!</h2><p id="completeText"></p><button class="btn fill" id="completeBack">Vissza a tanulási úthoz</button></div>
 </div></section>
-<section id="szavak" hidden>
-  <div class="sub" id="prog"></div>
-  <div class="bar"><i id="pbar"></i></div>
-  <button class="card flash" id="flash" aria-label="Kártya megfordítása"></button>
-  <div class="row">
-    <button class="btn" id="again">Még gyakorlom</button>
-    <button class="btn fill" id="known">Tudom</button>
-  </div>
-  <p class="note">Koppints a kártyára a megfordításhoz. A haladásod ezen az eszközön megmarad.</p>
-  <p><button class="btn" id="reset" style="flex:none">Haladás törlése</button></p>
-</section>
-
 <section id="ragozas" hidden>
   <div class="pills" id="tabs" role="group" aria-label="Táblázat kiválasztása"></div>
   <div class="card"><h2 id="ttitle"></h2><p class="note" id="tnote"></p><div class="tw"><table id="tbl"></table></div></div>
@@ -217,44 +202,19 @@ var $=function(i){return document.getElementById(i)};
 var st={known:{},streak:0,best:0};
 try{var s=JSON.parse(localStorage.getItem("felis")||"null");if(s)st=s}catch(e){}
 // Régebbi verziókból megmaradt mentések kiegészítése, hogy az indulás ne álljon le.
-st.known=st.known||{};st.lessonsDone=st.lessonsDone||{};st.groupDone=st.groupDone||{};st.xp=Number(st.xp)||0;st.streak=Number(st.streak)||0;st.best=Number(st.best)||0;
+st.lessonsDone=st.lessonsDone||{};st.groupDone=st.groupDone||{};st.xp=Number(st.xp)||0;st.streak=Number(st.streak)||0;st.best=Number(st.best)||0;
 function save(){try{localStorage.setItem("felis",JSON.stringify(st))}catch(e){}}
 function head(){var x=st.xp||0,done=Object.keys(st.lessonsDone||{}).filter(function(k){return st.lessonsDone[k]}).length;$("streak").innerHTML="<div class=\"gem-count\">◆ "+x+"</div><small>Szint "+(Math.floor(x/50)+1)+" · sorozat "+(st.streak||0)+"</small>";if($("profileXp"))$("profileXp").textContent=x;if($("profileLevel"))$("profileLevel").textContent=Math.floor(x/50)+1;if($("profileLessons"))$("profileLessons").textContent=done+" / "+C.lessons.length;if($("profileStreak"))$("profileStreak").textContent=st.streak||0}
 // Alsó navigáció és segédanyagok.
 function showPanel(id,navId){
  showDetailChrome(false);
- var active=navId||((id==="tanulas"||id==="szavak"||id==="kviz"||id==="profil")?id:"profil");
+ var active=navId||((id==="tanulas"||id==="kviz"||id==="profil")?id:"profil");
  document.querySelectorAll("nav button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.t===active)});
- ["tanulas","szavak","ragozas","kviz","mondatok","alapok","profil"].forEach(function(section){$(section).hidden=section!==id});
+ ["tanulas","ragozas","kviz","mondatok","alapok","profil"].forEach(function(section){$(section).hidden=section!==id});
  if(id==="tanulas")renderCourse();if(id==="mondatok"&&!built)sent();if(id==="kviz"&&!$("qword").textContent)ask();head()
 }
-document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){if(b.dataset.t==="szavak")flashScope=null;showPanel(b.dataset.t,b.dataset.t)}});
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){showPanel(b.dataset.t,b.dataset.t)}});
 document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){showPanel(b.dataset.open,"profil")}});
-// flashcards
-var ci=0,flip=false,flashScope=null;
-function isGroupLessonUnlocked(key,index){return index===0||!!(st.groupDone&&st.groupDone[key+"-"+(index-1)])}
-function flashIndices(){return W.map(function(w,i){return i}).filter(function(i){return !flashScope||flashScope.indexOf(W[i][0])>=0})}
-function pending(){return flashIndices().filter(function(i){return !st.known[W[i][0]]})}
-function card(){
- var p=pending(),scope=flashIndices(),n=scope.filter(function(i){return !!st.known[W[i][0]]}).length;
- $("prog").textContent="Megtanult szavak: "+n+" / "+scope.length;
- $("pbar").style.width=(scope.length?100*n/scope.length:0)+"%";
- var f=$("flash");
- if(!p.length){f.innerHTML='<p class="hu">Mind a '+scope.length+' szót tudod! 🎉</p><p class="note">Törölheted a haladást, és kezdheted elölről.</p>';return}
- if(p.indexOf(ci)<0)ci=p[0];
- var w=W[ci];
- f.innerHTML=flip?'<p class="hu">'+w[1]+'</p><p class="lat">'+w[0]+'</p><p class="vocab-form">'+dictionaryForm(w[0])+'</p>':'<p class="lat">'+w[0]+'</p><p class="vocab-form">'+dictionaryForm(w[0])+'</p><p class="note">Koppints a fordításért</p>';
-}
-function step(k){
- var p=pending();if(!p.length)return;
- if(k){st.known[W[ci][0]]=1;st.xp=(st.xp||0)+2}save();head();
- var q=pending();if(!q.length){card();return}
- var nx=q.filter(function(i){return i>ci})[0];ci=nx===undefined?q[0]:nx;flip=false;card();
-}
-$("flash").onclick=function(){if(pending().length){flip=!flip;card()}};
-$("known").onclick=function(){step(true)};
-$("again").onclick=function(){step(false)};
-$("reset").onclick=function(){st.known={};st.lessonsDone={};st.groupDone={};save();ci=0;flip=false;card();renderCourse()};
 // tables
 function tbl(k){
  var d=T[k],h="";
@@ -498,7 +458,7 @@ var INFLECTION_BANK={
 var CORE_SENTENCES={0:[0,11],1:[0,8],2:[3,18],3:[6,16],4:[0,20],5:[7,12],6:[4,23],7:[20,22]};
 var currentGroupKey=null;
 function showDetailChrome(show){$("appHeader").hidden=show;$("mainNav").hidden=show}
-function openGroup(key){var g=GROUPS[key];if(!g)return;currentGroupKey=key;$("courseMap").hidden=true;$("lessonPage").hidden=true;$("groupPage").hidden=false;$("groupTitle").textContent=g.name;showDetailChrome(true);var root=$("groupLessons");root.innerHTML="";g.lessons.forEach(function(item,i){var b=document.createElement("button");b.className="group-lesson";b.disabled=!isGroupLessonUnlocked(key,i);b.setAttribute("aria-label",(i+1)+". lecke: "+item.title);var orb=document.createElement("span");orb.className="group-orb";orb.style.setProperty("--topic",g.color);orb.setAttribute("data-num",String(11+i));orb.textContent="▤";var copy=document.createElement("span");copy.className="group-copy";var title=document.createElement("strong");title.textContent=(i+1)+". lecke";var subtitle=document.createElement("span");subtitle.textContent=item.title;var example=document.createElement("em");example.textContent=item.example;copy.appendChild(title);copy.appendChild(subtitle);copy.appendChild(example);var star=document.createElement("span");star.className="group-status";star.textContent="★";b.appendChild(orb);b.appendChild(copy);b.appendChild(star);b.onclick=function(){openLesson(item.lesson,item,i)};root.appendChild(b)});var flash=document.createElement("button");flash.className="group-lesson flashcard";var orb2=document.createElement("span");orb2.className="group-orb";orb2.style.setProperty("--topic",g.color);orb2.textContent="▱";var copy2=document.createElement("span");copy2.className="group-copy";var title2=document.createElement("strong");title2.textContent="Szókártyák";var sub2=document.createElement("span");sub2.textContent="Szókincs";copy2.appendChild(title2);copy2.appendChild(sub2);var check=document.createElement("span");check.className="group-status";check.textContent="✓";flash.appendChild(orb2);flash.appendChild(copy2);flash.appendChild(check);flash.onclick=function(){flashScope=[];g.lessons.forEach(function(item){(item.words||C.lessons[item.lesson].words).forEach(function(word){if(flashScope.indexOf(word)<0)flashScope.push(word)})});showPanel("szavak","szavak");card()};root.appendChild(flash)}
+function openGroup(key){var g=GROUPS[key];if(!g)return;currentGroupKey=key;$("courseMap").hidden=true;$("lessonPage").hidden=true;$("groupPage").hidden=false;$("groupTitle").textContent=g.name;showDetailChrome(true);var root=$("groupLessons");root.innerHTML="";g.lessons.forEach(function(item,i){var b=document.createElement("button");b.className="group-lesson";b.disabled=!isGroupLessonUnlocked(key,i);b.setAttribute("aria-label",(i+1)+". lecke: "+item.title);var orb=document.createElement("span");orb.className="group-orb";orb.style.setProperty("--topic",g.color);orb.setAttribute("data-num",String(11+i));orb.textContent="▤";var copy=document.createElement("span");copy.className="group-copy";var title=document.createElement("strong");title.textContent=(i+1)+". lecke";var subtitle=document.createElement("span");subtitle.textContent=item.title;var example=document.createElement("em");example.textContent=item.example;copy.appendChild(title);copy.appendChild(subtitle);copy.appendChild(example);var star=document.createElement("span");star.className="group-status";star.textContent="★";b.appendChild(orb);b.appendChild(copy);b.appendChild(star);b.onclick=function(){openLesson(item.lesson,item,i)};root.appendChild(b)})}
 function closeGroup(){currentGroupKey=null;$("groupPage").hidden=true;$("courseMap").hidden=false;showDetailChrome(false);renderCourse()}
 $("groupBack").onclick=closeGroup;
 function renderCourse(){
