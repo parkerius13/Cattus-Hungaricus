@@ -44,7 +44,7 @@ jobs:
           cp Felis_Magyar.apk downloads/Felis_Magyar_v1.18.apk
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add downloads/Felis_Magyar_v1.17.apk
+          git add downloads/Felis_Magyar_v1.18.apk
           git commit -m "Publish Felis Magyar 1.18 APK"
           git push
       - uses: actions/upload-artifact@v4
