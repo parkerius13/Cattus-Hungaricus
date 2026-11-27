@@ -6,14 +6,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.net.Uri;
 import android.webkit.WebResourceResponse;
 import androidx.webkit.WebViewAssetLoader;
-import android.webkit.WebViewClient;
+import androidx.webkit.WebViewClientCompat;
+import androidx.webkit.WebResourceErrorCompat;
 import android.view.Gravity;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -29,6 +29,7 @@ public final class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
     private TextView bootStatus;
+    private volatile String lastAssetStatus = "az index.html kérés még nem érkezett meg";
     private String lastPageUrl = "még nem érkezett oldalbetöltési visszajelzés";
     private String lastProbe = "még nem futott DOM-ellenőrzés";
     private boolean booting = true;
@@ -61,7 +62,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.41\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.42\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -70,18 +71,18 @@ public final class MainActivity extends Activity {
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(new WebViewClientCompat() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return assetLoader.shouldInterceptRequest(request.getUrl());
+                return interceptAsset(request.getUrl());
             }
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-                return assetLoader.shouldInterceptRequest(Uri.parse(url));
+                return interceptAsset(Uri.parse(url));
             }
             @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceErrorCompat error) {
                 if (request.isForMainFrame()) {
                     showBootError("A kezdőoldal betöltése sikertelen.\n" +
                         error.getDescription() + " (" + error.getErrorCode() + ")");
@@ -92,7 +93,7 @@ public final class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 if (!booting || url == null || url.startsWith("about:blank")) return;
                 lastPageUrl = url;
-                verifyRenderedPage(view, url, false);
+                verifyRenderedPage(view, url);
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -101,7 +102,7 @@ public final class MainActivity extends Activity {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
                         "\nSor: " + message.lineNumber() +
-                        "\n\nFelis 1.41 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.42 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -119,13 +120,25 @@ public final class MainActivity extends Activity {
         loadBundledPage();
     }
 
-    private void verifyRenderedPage(WebView view, String source, boolean finalCheck) {
+    private WebResourceResponse interceptAsset(Uri uri) {
+        WebResourceResponse response = assetLoader.shouldInterceptRequest(uri);
+        String path = uri.getPath();
+        if (path != null && path.endsWith("/index.html")) {
+            lastAssetStatus = response == null ? "index.html: az APK asset-loader nem talált fájlt"
+                : "index.html: kiszolgálva, MIME " + response.getMimeType();
+            android.util.Log.i("Felis", lastAssetStatus + " — " + uri);
+        }
+        return response;
+    }
+
+    private void verifyRenderedPage(WebView view, String source) {
         if (!booting) return;
         String probe = "(function(){var b=document.body,g=document.getElementById('topicGrid');" +
             "var t=b?String(b.innerText||b.textContent||'').trim().length:0;" +
             "var shown=!!(b&&b.getBoundingClientRect().height>0);" +
-            "return {error:String(window.__FELIS_BOOT_ERROR||''),text:t," +
-            "topics:g?g.querySelectorAll('.topic-node').length:0,shown:shown}})()";
+            "return {text:t,topics:g?g.querySelectorAll('.topic-node').length:0,shown:shown," +
+            "ready:document.readyState,html:document.documentElement?document.documentElement.outerHTML.length:0," +
+            "title:document.title}})()";
         view.evaluateJavascript(probe, result -> {
             if (!booting) return;
             try {
@@ -141,7 +154,10 @@ public final class MainActivity extends Activity {
                 int textLength = state.optInt("text", 0);
                 int topicCount = state.optInt("topics", 0);
                 boolean shown = state.optBoolean("shown", false);
-                lastProbe = "szöveg: " + textLength + ", témakör: " + topicCount + ", látható: " + shown;
+                lastProbe = "readyState: " + state.optString("ready", "?") +
+                    ", HTML-karakter: " + state.optInt("html", 0) +
+                    ", cím: " + state.optString("title", "") +
+                    ", szöveg: " + textLength + ", témakör: " + topicCount + ", látható: " + shown;
                 if (textLength > 0 && topicCount > 0 && shown && !hasBootError) {
                     finishBoot();
                 } else if (!hasBootError) {
@@ -155,25 +171,27 @@ public final class MainActivity extends Activity {
 
     private void scheduleRenderCheck(WebView view, String source) {
         if (!booting || hasBootError) return;
-        handler.postDelayed(() -> verifyRenderedPage(view, source, false), 250);
+        handler.postDelayed(() -> verifyRenderedPage(view, source), 250);
     }
 
     private void loadBundledPage() {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.41\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.42\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
                     "Érintsd meg a képernyőt az újrapróbáláshoz.\n\n" +
-                    "Oldal: " + lastPageUrl + "\nEllenőrzés: " + lastProbe + "\n\nFelis 1.41");
+                    "Oldal: " + lastPageUrl + "\nAsset: " + lastAssetStatus +
+                    "\nEllenőrzés: " + lastProbe + "\n\nFelis 1.42");
             }
         };
         handler.postDelayed(timeout, 8000);
 
         lastPageUrl = "a WebView nem jelezte az oldal betöltését";
+        lastAssetStatus = "az index.html kérése nem érkezett meg";
         lastProbe = "még nem futott DOM-ellenőrzés";
         webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
     }
