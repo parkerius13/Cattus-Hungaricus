@@ -22,6 +22,7 @@ import android.widget.TextView;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import org.json.JSONTokener;
 
 public final class MainActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -56,7 +57,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.34\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.35\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -73,13 +74,33 @@ public final class MainActivity extends Activity {
                         error.getDescription() + " (" + error.getErrorCode() + ")");
                 }
             }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (!booting) return;
+                view.evaluateJavascript("(function(){return String(window.__FELIS_BOOT_ERROR||'')})()", result -> {
+                    if (!booting) return;
+                    String jsError = "";
+                    try {
+                        Object value = new JSONTokener(result).nextValue();
+                        if (value != null) jsError = String.valueOf(value);
+                    } catch (Exception ignored) { }
+                    if (!jsError.isEmpty()) {
+                        showBootError("JavaScript-indítási hiba:\n" + jsError +
+                            "\n\nFelis 1.35 — érintsd meg az újrapróbáláshoz.");
+                    } else if (!hasBootError) {
+                        finishBoot();
+                    }
+                });
+            }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage message) {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
-                        "\nSor: " + message.lineNumber());
+                        "\nSor: " + message.lineNumber() +
+                        "\n\nFelis 1.35 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -101,12 +122,12 @@ public final class MainActivity extends Activity {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.34\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.35\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
-                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.34");
+                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.35");
             }
         };
         handler.postDelayed(timeout, 8000);
@@ -118,7 +139,8 @@ public final class MainActivity extends Activity {
             while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
             String html = new String(output.toByteArray(), StandardCharsets.UTF_8);
             String errorHook = "<script>window.onerror=function(message,source,line,column){" +
-                "try{if(window.FelisAndroid)window.FelisAndroid.jsError(String(message),Number(line)||0)}" +
+                "var e=String(message)+' (sor '+(Number(line)||0)+')';window.__FELIS_BOOT_ERROR=e;" +
+                "try{if(window.FelisAndroid&&window.FelisAndroid.jsError)window.FelisAndroid.jsError(e,Number(line)||0)}" +
                 "catch(ignore){};return false};</script>";
             html = html.replace("</head>", errorHook + "</head>");
             String bootCall = "head();tbl(\"puella\");renderCourse();";
@@ -131,8 +153,15 @@ public final class MainActivity extends Activity {
             android.util.Log.e("Felis", "Unable to read bundled lesson page", error);
             showBootError("Az APK-ba csomagolt tananyagfájl nem olvasható.\n" +
                 error.getClass().getSimpleName() + ": " + error.getMessage() +
-                "\n\nFelis 1.34 — érintsd meg az újrapróbáláshoz.");
+                "\n\nFelis 1.35 — érintsd meg az újrapróbáláshoz.");
         }
+    }
+
+    private void finishBoot() {
+        if (hasBootError) return;
+        booting = false;
+        if (timeout != null) handler.removeCallbacks(timeout);
+        bootStatus.setVisibility(TextView.GONE);
     }
 
     private void showBootError(String message) {
@@ -143,22 +172,17 @@ public final class MainActivity extends Activity {
         android.util.Log.e("Felis", message);
     }
 
-    private final class FelisBridge {
+    public final class FelisBridge {
         @JavascriptInterface
         public void ready() {
-            runOnUiThread(() -> {
-                booting = false;
-                hasBootError = false;
-                if (timeout != null) handler.removeCallbacks(timeout);
-                bootStatus.setVisibility(TextView.GONE);
-            });
+            runOnUiThread(() -> finishBoot());
         }
 
         @JavascriptInterface
         public void jsError(String message, int line) {
             runOnUiThread(() -> showBootError(
                 "JavaScript-indítási hiba:\n" + message + "\nSor: " + line +
-                "\n\nFelis 1.34 — érintsd meg az újrapróbáláshoz."));
+                "\n\nFelis 1.35 — érintsd meg az újrapróbáláshoz."));
         }
     }
 }
