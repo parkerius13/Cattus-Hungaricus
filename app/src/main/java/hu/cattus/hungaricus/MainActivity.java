@@ -1,26 +1,42 @@
 package hu.cattus.hungaricus;
+
 import android.app.Activity;
 import android.os.Bundle;
-import android.webkit.*;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.graphics.Insets;
-import androidx.webkit.WebViewAssetLoader;
-import androidx.webkit.WebViewClientCompat;
+
 public final class MainActivity extends Activity {
- @Override public void onCreate(Bundle b) {
- super.onCreate(b);
- getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
- WebView w=new WebView(this);
- WebSettings s=w.getSettings();
- s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setAllowFileAccess(false); s.setAllowContentAccess(false); s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
- WebViewAssetLoader loader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
- w.setWebViewClient(new WebViewClientCompat(){
- @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return loader.shouldInterceptRequest(r.getUrl());}
- @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return true;}
- });
- setContentView(w);
- if(android.os.Build.VERSION.SDK_INT>=35) w.setOnApplyWindowInsetsListener((v,i)->{Insets a=i.getInsets(WindowInsets.Type.systemBars());Insets ime=i.getInsets(WindowInsets.Type.ime());v.setPadding(a.left,a.top,a.right,Math.max(a.bottom,ime.bottom));return i;});
- w.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
- }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        WebView webView = new WebView(this);
+        webView.setBackgroundColor(android.graphics.Color.WHITE);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(false);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+
+        webView.setWebViewClient(new WebViewClient());
+        setContentView(webView);
+
+        if (android.os.Build.VERSION.SDK_INT >= 35) {
+            webView.setOnApplyWindowInsetsListener((view, insets) -> {
+                Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                Insets ime = insets.getInsets(WindowInsets.Type.ime());
+                view.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, ime.bottom));
+                return insets;
+            });
+        }
+
+        // The app is fully offline; load its bundled entry page directly from assets.
+        webView.loadUrl("file:///android_asset/www/index.html");
+    }
 }
