@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.graphics.Insets;
+import android.widget.TextView;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public final class MainActivity extends Activity {
     @Override
@@ -23,8 +26,6 @@ public final class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-
-        webView.setWebViewClient(new WebViewClient());
         setContentView(webView);
 
         if (android.os.Build.VERSION.SDK_INT >= 35) {
@@ -36,7 +37,26 @@ public final class MainActivity extends Activity {
             });
         }
 
-        // The app is fully offline; load its bundled entry page directly from assets.
-        webView.loadUrl("file:///android_asset/www/index.html");
+        try (InputStream input = getAssets().open("www/index.html");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            String html = new String(output.toByteArray(), StandardCharsets.UTF_8);
+            webView.loadDataWithBaseURL(
+                "https://appassets.androidplatform.net/assets/www/index.html",
+                html,
+                "text/html",
+                "UTF-8",
+                null
+            );
+        } catch (Exception error) {
+            TextView message = new TextView(this);
+            message.setText("A Felis tananyaga nem olvasható be. Kérlek, telepítsd újra az alkalmazást.");
+            message.setTextSize(18);
+            message.setPadding(32, 32, 32, 32);
+            setContentView(message);
+            android.util.Log.e("Felis", "Unable to read bundled lesson page", error);
+        }
     }
 }
