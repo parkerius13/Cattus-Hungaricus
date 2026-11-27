@@ -400,7 +400,7 @@ GROUPS.thirdDeclension={name:"III. főnévragozás",color:"#c2185b",lessons:[
 ]};
 
 var DECLENSION_WORDS={
- 1:Array.from(new Set(DATIVE_WORD_KEYS.concat(["agricola","nauta","induciae","magistra","Iulia","mensa","rana"]))),
+  1:Array.from(new Set(BANK_NOUNS.filter(function(x){return x[0]===1}).map(function(x){return x[1]}).concat(DATIVE_WORD_KEYS,["agricola","nauta","induciae","magistra","Iulia","mensa","rana"]))),
  2:Array.from(new Set(BANK_NOUNS.filter(function(x){return x[0]===2}).map(function(x){return x[1]}).concat(["puer","vir","servus","amicus","discipulus","verbum"]))),
  3:Array.from(new Set(BANK_NOUNS.filter(function(x){return x[0]===3}).map(function(x){return x[1]}).concat(["pater","mater","urbs"]))),
  4:Array.from(new Set(BANK_NOUNS.filter(function(x){return x[0]===4}).map(function(x){return x[1]}))),
@@ -668,6 +668,33 @@ function openLesson(i,groupItem,groupIndex){
  var list=$("lessonWords"),displayWords=custom&&groupItem.words?groupItem.words:l.words;list.innerHTML="";displayWords.forEach(function(word){var pair=W.filter(function(w){return w[0]===word})[0];if(!pair)return;var row=document.createElement("div");row.className="vocab-row";var latin=document.createElement("b");latin.textContent=dictionaryForm(pair[0]);var hu=document.createElement("span");hu.textContent=pair[1];row.appendChild(latin);row.appendChild(hu);list.appendChild(row)});lessonSession={lesson:i,groupKey:currentGroupKey,groupIndex:groupIndex,groupItem:custom?groupItem:null}
 }
 function backToCourse(){document.body.classList.remove("exercise-mode","keyboard-open");lessonSession=null;$("lessonPage").hidden=true;$("grammarPage").hidden=true;if(currentGroupKey){openGroup(currentGroupKey)}else{$("groupPage").hidden=true;$("courseMap").hidden=false;showDetailChrome(false);renderCourse()}}
+function bankInflectionData(template,allowedKeys,usedKeys){
+ var title=String(template&&template[0]||""),bare=title.split(/[,—]/)[0].trim().toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"").replace(/[^a-z]/g,""),source=null,sourceKey="";
+ for(var i=0;i<BANK_NOUNS.length;i++)if(String(BANK_NOUNS[i][1]).toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"").replace(/[^a-z]/g,"")===bare){source=BANK_NOUNS[i];sourceKey=source[1];break}
+ if(!source)for(var wi=0;wi<W.length;wi++)if(String(W[wi][0]).toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"").replace(/[^a-z]/g,"")===bare){sourceKey=W[wi][0];var sd=declensionForKey(sourceKey);if(!sd){var sf=dictionaryForm(sourceKey);sd=/,\s*-?ae\b/i.test(sf)?1:/,\s*-?i{1,2}\b/i.test(sf)?2:/,\s*-?is\b/i.test(sf)?3:/,\s*-?ūs?\b/i.test(sf)?4:/,\s*-?eī?\b/i.test(sf)?5:0}if(sd)source=[sd,sourceKey,dictionaryForm(sourceKey)];break}
+ if(!source)return template;
+ var d=source[0],sourceNeuter=/\bn\./i.test(source[2]),caseName=/genitivus|birtokos/i.test(title)?"gen":/dativus|részes/i.test(title)?"dat":/accusativus|tárgyeset/i.test(title)?"acc":/ablativus|ablativ|eszköz/i.test(title)?"abl":/vocativus|megszólítás/i.test(title)?"voc":/nominativus|alanyeset/i.test(title)?"nom":"";
+ if(!caseName)return template;
+ var plural=/plural|többes/i.test(title),number=plural?"pl":"sg",pool=BANK_NOUNS.filter(function(n){return n[0]===d&&(/\bn\./i.test(n[2])===sourceNeuter)&&allowedKeys.indexOf(n[1])>=0&&usedKeys.indexOf(n[1])<0});
+ if(!pool.length)pool=BANK_NOUNS.filter(function(n){return n[0]===d&&(/\bn\./i.test(n[2])===sourceNeuter)&&allowedKeys.indexOf(n[1])>=0});
+ if(!pool.length)return template;
+ pool=shuf(pool);var picked=null,answer="";
+ for(var p=0;p<pool.length;p++){var n=pool[p],nom=n[1],form=n[2],parts=form.split(","),genToken=String(parts[1]||"").trim().split(/\s+/)[0].replace(/[.;]/g,""),stem="",gen="",abbrev=genToken.charAt(0)==="-";
+  if(abbrev){var ending=genToken.slice(1),plainEnding=ending.toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"");if(d===1)stem=nom.replace(/a$/i,"");else if(d===2)stem=nom.replace(/(?:us|um)$/i,"");else if(d===3){if(plainEnding==="is")stem=nom.replace(/is$/i,"");else if(plainEnding==="oris"||plainEnding==="eris")stem=nom.replace(/us$/i,"")+plainEnding.slice(0,-2);else if(plainEnding==="atis")stem=nom.replace(/as$/i,"")+"at";else if(plainEnding==="onis")stem=nom.replace(/o$/i,"")+"on";else if(plainEnding==="utis")stem=nom.replace(/us$/i,"")+"ut";else continue}else if(d===4)stem=nom.replace(/us$/i,"");else if(d===5)stem=nom.replace(/s$/i,"");else continue;gen=d===2?stem+"i":d===3?stem+"is":stem+ending}
+  else{gen=genToken;var g=gen.toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,"");if(d===1&&g.endsWith("ae"))stem=gen.slice(0,-2);else if(d===2&&g.endsWith("ii"))stem=gen.slice(0,-2);else if(d===2&&g.endsWith("i"))stem=gen.slice(0,-1);else if(d===3&&g.endsWith("is"))stem=gen.slice(0,-2);else if(d===4&&g.endsWith("us"))stem=gen.slice(0,-2);else if(d===5&&(g.endsWith("ei")||g.endsWith("eī")))stem=nom.replace(/s$/i,"");else continue}
+  var neuter=/\bn\./i.test(form),ius=/ius$/i.test(nom),answerForm="";
+  if(d===1){var aStem=stem;answerForm=caseName==="nom"||caseName==="voc"?(plural?aStem+"ae":nom):caseName==="gen"||caseName==="dat"?(plural?aStem+"ārum":gen):caseName==="acc"?(plural?aStem+"ās":aStem+"am"):(plural?aStem+"īs":aStem+"ā")}
+  else if(d===2){answerForm=caseName==="nom"?(plural?(neuter?stem+"a":stem+"ī"):nom):caseName==="voc"?(plural?(neuter?stem+"a":stem+"ī"):(ius?stem:/us$/i.test(nom)?stem+"e":nom)):caseName==="gen"?(plural?stem+"ōrum":gen):caseName==="dat"?(plural?stem+"īs":stem+"ō"):caseName==="acc"?(neuter?(plural?stem+"a":nom):(plural?stem+"ōs":stem+"um")):(plural?stem+"īs":stem+"ō")}
+  else if(d===3){var simple=nom.toLowerCase().normalize("NFD").replace(/[\u0304\u0301]/g,""),iStem=/is$/i.test(simple)||/e$/i.test(simple)||["ars","pars","urbs","nox","dos","lis","mors","vis"].indexOf(nom)>=0;answerForm=caseName==="nom"?(plural?(neuter?stem+(iStem?"ia":"a"):stem+"ēs"):nom):caseName==="voc"?(plural?(neuter?stem+(iStem?"ia":"a"):stem+"ēs"):nom):caseName==="gen"?(plural?stem+(iStem?"ium":"um"):gen):caseName==="dat"?(plural?stem+"ibus":stem+"ī"):caseName==="acc"?(neuter?(plural?stem+(iStem?"ia":"a"):nom):(plural?stem+"ēs":stem+"em")):(plural?stem+"ibus":stem+(iStem?"ī":"e"))}
+  else if(d===4){answerForm=caseName==="nom"||caseName==="voc"?(plural?(neuter?stem+"ua":stem+"ūs"):nom):caseName==="gen"?(plural?stem+"uum":gen):caseName==="dat"?(plural?stem+"ibus":stem+"uī"):caseName==="acc"?(neuter?(plural?stem+"ua":nom):(plural?stem+"ūs":stem+"um")):(plural?stem+"ibus":stem+"ū")}
+  else if(d===5){answerForm=caseName==="nom"||caseName==="voc"?(plural?stem+"s":nom):caseName==="gen"?(plural?stem+"rum":gen):caseName==="dat"?(plural?stem+"bus":gen):caseName==="acc"?(plural?stem+"s":stem+"m"):(plural?stem+"bus":stem)}
+  else continue;
+  if(answerForm){picked=n;answer=answerForm;break}
+ }
+ if(!picked)return template;
+ usedKeys.push(picked[1]);var grammatical=caseName==="nom"?"nominativus":caseName==="voc"?"vocativus":caseName==="acc"?"accusativus":caseName==="gen"?"genitivus":caseName==="dat"?"dativus":"ablativus";
+ return [dictionaryForm(picked[1])+" — "+grammatical+" "+(plural?"pluralis":"singularis"),answer,"A szótári alakból képezd a kért esetet és számot; figyeld meg a tő és a végződés kapcsolatát."]
+}
 function makeTasks(l,item,index){
  var key=lessonSession.groupKey?lessonSession.groupKey+"-"+lessonSession.groupIndex:"core-"+index;
  var foundation=!lessonSession.groupKey&&FOUNDATION_PRACTICE[index],content=foundation||item||{};
@@ -677,7 +704,8 @@ function makeTasks(l,item,index){
  var rulePool=content.rules&&content.rules.length?content.rules:(content.check?[content.check]:(l.check?[l.check]:[]));
  for(var ri=0;ri<3;ri++){var rq=rulePool[ri%rulePool.length];if(rq)tasks.push({type:"grammar",check:rq})}
  var formPool=content.forms&&content.forms.length?content.forms:(INFLECTION_BANK[key]||[]);if(!formPool.length)formPool=INFLECTION_BANK["core-0"]||[];
- for(var fi=0;fi<6;fi++){var fd=formPool[fi%formPool.length];if(fd)tasks.push({type:"inflection",data:fd})}
+ var inflectionKeys=(typeof availableWords==="function"?availableWords():W).map(function(w){return Array.isArray(w)?w[0]:w}),usedInflectionKeys=[];
+ for(var fi=0;fi<6;fi++){var fd=bankInflectionData(formPool[fi%formPool.length],inflectionKeys,usedInflectionKeys);if(fd)tasks.push({type:"inflection",data:fd})}
  var sentencePool=content.sentences&&content.sentences.length?content.sentences:(l.sentences||CORE_SENTENCES[index%8]||[]);
  if(typeof sentencePool==="number")sentencePool=CORE_SENTENCES[index%8]||[sentencePool];if(!sentencePool.length)sentencePool=CORE_SENTENCES[index%8]||[0,1,2];
  for(var si=0;si<3;si++){var sn=sentencePool[si%sentencePool.length];if(typeof sn==="number")tasks.push({type:"sentence",index:sn});else if(sn)tasks.push({type:"sentence",sentence:sn})}
