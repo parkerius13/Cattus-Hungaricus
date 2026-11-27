@@ -57,7 +57,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.36\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.37\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -81,31 +81,39 @@ public final class MainActivity extends Activity {
                 String probe = "(function(){var b=document.body,g=document.getElementById('topicGrid');" +
                     "var t=b?String(b.innerText||b.textContent||'').trim().length:0;" +
                     "var shown=!!(b&&b.getBoundingClientRect().height>0);" +
-                    "return JSON.stringify({error:String(window.__FELIS_BOOT_ERROR||''),text:t," +
-                    "topics:g?g.querySelectorAll('.topic-node').length:0,shown:shown})})()";
+                    "return {error:String(window.__FELIS_BOOT_ERROR||''),text:t," +
+                    "topics:g?g.querySelectorAll('.topic-node').length:0,shown:shown}})()";
                 view.evaluateJavascript(probe, result -> {
                     if (!booting) return;
                     try {
-                        org.json.JSONObject state = (org.json.JSONObject) new JSONTokener(result).nextValue();
+                        Object parsed = new JSONTokener(result).nextValue();
+                        org.json.JSONObject state;
+                        if (parsed instanceof org.json.JSONObject) {
+                            state = (org.json.JSONObject) parsed;
+                        } else if (parsed instanceof String) {
+                            state = new org.json.JSONObject((String) parsed);
+                        } else {
+                            throw new IllegalStateException("Unexpected WebView probe result");
+                        }
                         String jsError = state.optString("error", "");
                         int textLength = state.optInt("text", 0);
                         int topicCount = state.optInt("topics", 0);
                         boolean shown = state.optBoolean("shown", false);
                         if (!jsError.isEmpty()) {
                             showBootError("JavaScript-indítási hiba:\n" + jsError +
-                                "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz.");
+                                "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz.");
                         } else if (textLength > 0 && topicCount > 0 && shown && !hasBootError) {
                             finishBoot();
                         } else if (!hasBootError) {
                             showBootError("Az oldal betöltődött, de a tananyag felülete nem rajzolódott ki." +
                                 "\nSzöveg: " + textLength + ", témakörök: " + topicCount +
-                                "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz.");
+                                "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz.");
                         }
                     } catch (Exception error) {
                         if (!hasBootError) {
                             showBootError("Nem sikerült ellenőrizni a tananyag felületét: " +
                                 error.getClass().getSimpleName() +
-                                "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz.");
+                                "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz.");
                         }
                     }
                 });
@@ -117,7 +125,7 @@ public final class MainActivity extends Activity {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
                         "\nSor: " + message.lineNumber() +
-                        "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -139,12 +147,12 @@ public final class MainActivity extends Activity {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.36\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.37\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
-                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.36");
+                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.37");
             }
         };
         handler.postDelayed(timeout, 8000);
@@ -167,7 +175,7 @@ public final class MainActivity extends Activity {
             android.util.Log.e("Felis", "Unable to read bundled lesson page", error);
             showBootError("Az APK-ba csomagolt tananyagfájl nem olvasható.\n" +
                 error.getClass().getSimpleName() + ": " + error.getMessage() +
-                "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz.");
+                "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz.");
         }
     }
 
@@ -191,7 +199,7 @@ public final class MainActivity extends Activity {
         public void jsError(String message, int line) {
             runOnUiThread(() -> showBootError(
                 "JavaScript-indítási hiba:\n" + message + "\nSor: " + line +
-                "\n\nFelis 1.36 — érintsd meg az újrapróbáláshoz."));
+                "\n\nFelis 1.37 — érintsd meg az újrapróbáláshoz."));
         }
     }
 }
