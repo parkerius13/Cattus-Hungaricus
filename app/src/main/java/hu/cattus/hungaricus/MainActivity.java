@@ -62,7 +62,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.42\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.43\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -102,7 +102,7 @@ public final class MainActivity extends Activity {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
                         "\nSor: " + message.lineNumber() +
-                        "\n\nFelis 1.42 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.43 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -178,14 +178,14 @@ public final class MainActivity extends Activity {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.42\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.43\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
                     "Érintsd meg a képernyőt az újrapróbáláshoz.\n\n" +
                     "Oldal: " + lastPageUrl + "\nAsset: " + lastAssetStatus +
-                    "\nEllenőrzés: " + lastProbe + "\n\nFelis 1.42");
+                    "\nEllenőrzés: " + lastProbe + "\n\nFelis 1.43");
             }
         };
         handler.postDelayed(timeout, 8000);
