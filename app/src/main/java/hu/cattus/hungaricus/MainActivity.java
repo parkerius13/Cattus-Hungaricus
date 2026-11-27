@@ -13,7 +13,7 @@ import android.webkit.WebView;
 import android.net.Uri;
 import android.webkit.WebResourceResponse;
 import androidx.webkit.WebViewAssetLoader;
-import androidx.webkit.WebViewClientCompat;
+import android.webkit.WebViewClient;
 import android.view.Gravity;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -70,7 +70,7 @@ public final class MainActivity extends Activity {
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        webView.setWebViewClient(new WebViewClientCompat() {
+        webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
