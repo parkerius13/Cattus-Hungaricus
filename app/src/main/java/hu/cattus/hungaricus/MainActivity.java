@@ -5,13 +5,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.webkit.ConsoleMessage;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.net.Uri;
+import android.webkit.WebResourceResponse;
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewClientCompat;
 import android.view.Gravity;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -19,16 +21,16 @@ import android.graphics.Insets;
 import android.graphics.Color;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import org.json.JSONTokener;
 
 public final class MainActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private FrameLayout root;
     private WebView webView;
+    private WebViewAssetLoader assetLoader;
     private TextView bootStatus;
+    private String lastPageUrl = "még nem érkezett oldalbetöltési visszajelzés";
+    private String lastProbe = "még nem futott DOM-ellenőrzés";
     private boolean booting = true;
     private boolean hasBootError = false;
     private Runnable timeout;
@@ -40,6 +42,9 @@ public final class MainActivity extends Activity {
 
         root = new FrameLayout(this);
         webView = new WebView(this);
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
         webView.setBackgroundColor(Color.rgb(251, 249, 250));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -47,7 +52,6 @@ public final class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        webView.addJavascriptInterface(new FelisBridge(), "FelisAndroid");
 
         bootStatus = new TextView(this);
         bootStatus.setGravity(Gravity.CENTER);
@@ -57,7 +61,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.40\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.41\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -66,7 +70,16 @@ public final class MainActivity extends Activity {
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(new WebViewClientCompat() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                return assetLoader.shouldInterceptRequest(Uri.parse(url));
+            }
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) {
@@ -78,6 +91,7 @@ public final class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 if (!booting || url == null || url.startsWith("about:blank")) return;
+                lastPageUrl = url;
                 verifyRenderedPage(view, url, false);
             }
         });
@@ -87,7 +101,7 @@ public final class MainActivity extends Activity {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
                         "\nSor: " + message.lineNumber() +
-                        "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.41 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -124,14 +138,11 @@ public final class MainActivity extends Activity {
                 } else {
                     throw new IllegalStateException("Unexpected WebView probe result");
                 }
-                String jsError = state.optString("error", "");
                 int textLength = state.optInt("text", 0);
                 int topicCount = state.optInt("topics", 0);
                 boolean shown = state.optBoolean("shown", false);
-                if (!jsError.isEmpty()) {
-                    showBootError("JavaScript-indítási hiba:\n" + jsError +
-                        "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
-                } else if (textLength > 0 && topicCount > 0 && shown && !hasBootError) {
+                lastProbe = "szöveg: " + textLength + ", témakör: " + topicCount + ", látható: " + shown;
+                if (textLength > 0 && topicCount > 0 && shown && !hasBootError) {
                     finishBoot();
                 } else if (!hasBootError) {
                     scheduleRenderCheck(view, source);
@@ -151,42 +162,20 @@ public final class MainActivity extends Activity {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.40\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.41\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
-                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.40");
+                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\n" +
+                    "Oldal: " + lastPageUrl + "\nEllenőrzés: " + lastProbe + "\n\nFelis 1.41");
             }
         };
         handler.postDelayed(timeout, 8000);
 
-        try (InputStream input = getAssets().open("www/index.html");
-             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int count;
-            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
-            String html = new String(output.toByteArray(), StandardCharsets.UTF_8);
-            String errorHook = "<script>window.onerror=function(message,source,line,column){" +
-                "var e=String(message)+' (sor '+(Number(line)||0)+')';window.__FELIS_BOOT_ERROR=e;" +
-                "try{if(window.FelisAndroid&&window.FelisAndroid.jsError)window.FelisAndroid.jsError(e,Number(line)||0)}" +
-                "catch(ignore){};return false};</script>";
-            html = html.replace("</head>", errorHook + "</head>");
-            String bootCall = "head();tbl(\"puella\");renderCourse();";
-            String readyCall = bootCall +
-                "requestAnimationFrame(function(){requestAnimationFrame(function(){" +
-                "if(window.FelisAndroid&&window.FelisAndroid.ready)FelisAndroid.ready();" +
-                "});});";
-            html = html.replace(bootCall, readyCall);
-            webView.loadDataWithBaseURL(
-                "https://appassets.androidplatform.net/assets/www/index.html",
-                html, "text/html", "UTF-8", null);
-        } catch (Exception error) {
-            android.util.Log.e("Felis", "Unable to read bundled lesson page", error);
-            showBootError("Az APK-ba csomagolt tananyagfájl nem olvasható.\n" +
-                error.getClass().getSimpleName() + ": " + error.getMessage() +
-                "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
-        }
+        lastPageUrl = "a WebView nem jelezte az oldal betöltését";
+        lastProbe = "még nem futott DOM-ellenőrzés";
+        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
     }
 
     private void finishBoot() {
@@ -204,17 +193,4 @@ public final class MainActivity extends Activity {
         android.util.Log.e("Felis", message);
     }
 
-    public final class FelisBridge {
-        @JavascriptInterface
-        public void ready() {
-            runOnUiThread(() -> verifyRenderedPage(webView, "JavaScript boot", true));
-        }
-
-        @JavascriptInterface
-        public void jsError(String message, int line) {
-            runOnUiThread(() -> showBootError(
-                "JavaScript-indítási hiba:\n" + message + "\nSor: " + line +
-                "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz."));
-        }
-    }
 }
