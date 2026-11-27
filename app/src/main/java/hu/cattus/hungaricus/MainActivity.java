@@ -57,7 +57,7 @@ public final class MainActivity extends Activity {
         int pad = (int) (28 * getResources().getDisplayMetrics().density);
         bootStatus.setPadding(pad, pad, pad, pad);
         bootStatus.setBackgroundColor(Color.rgb(251, 249, 250));
-        bootStatus.setText("Felis 1.39\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.40\nA tananyag betöltése…");
         bootStatus.setOnClickListener(view -> loadBundledPage());
 
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -87,7 +87,7 @@ public final class MainActivity extends Activity {
                 if (booting && message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
                     showBootError("JavaScript-indítási hiba:\n" + message.message() +
                         "\nSor: " + message.lineNumber() +
-                        "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
                 }
                 return true;
             }
@@ -130,36 +130,33 @@ public final class MainActivity extends Activity {
                 boolean shown = state.optBoolean("shown", false);
                 if (!jsError.isEmpty()) {
                     showBootError("JavaScript-indítási hiba:\n" + jsError +
-                        "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz.");
+                        "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
                 } else if (textLength > 0 && topicCount > 0 && shown && !hasBootError) {
                     finishBoot();
-                } else if (finalCheck && !hasBootError) {
-                    showBootError("A tananyag indult, de a felület nem jelent meg." +
-                        "\nSzöveg: " + textLength + ", témakörök: " + topicCount +
-                        "\nEllenőrzés: " + source +
-                        "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz.");
+                } else if (!hasBootError) {
+                    scheduleRenderCheck(view, source);
                 }
             } catch (Exception error) {
-                if (finalCheck && !hasBootError) {
-                    showBootError("Nem sikerült ellenőrizni a tananyag felületét: " +
-                        error.getClass().getSimpleName() +
-                        "\nEllenőrzés: " + source +
-                        "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz.");
-                }
+                if (!hasBootError) scheduleRenderCheck(view, source);
             }
         });
+    }
+
+    private void scheduleRenderCheck(WebView view, String source) {
+        if (!booting || hasBootError) return;
+        handler.postDelayed(() -> verifyRenderedPage(view, source, false), 250);
     }
 
     private void loadBundledPage() {
         booting = true;
         hasBootError = false;
         bootStatus.setVisibility(TextView.VISIBLE);
-        bootStatus.setText("Felis 1.39\nA tananyag betöltése…");
+        bootStatus.setText("Felis 1.40\nA tananyag betöltése…");
         if (timeout != null) handler.removeCallbacks(timeout);
         timeout = () -> {
             if (booting && !hasBootError) {
                 showBootError("A tananyag 8 másodperc alatt nem indult el.\n" +
-                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.39");
+                    "Érintsd meg a képernyőt az újrapróbáláshoz.\n\nFelis 1.40");
             }
         };
         handler.postDelayed(timeout, 8000);
@@ -188,7 +185,7 @@ public final class MainActivity extends Activity {
             android.util.Log.e("Felis", "Unable to read bundled lesson page", error);
             showBootError("Az APK-ba csomagolt tananyagfájl nem olvasható.\n" +
                 error.getClass().getSimpleName() + ": " + error.getMessage() +
-                "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz.");
+                "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz.");
         }
     }
 
@@ -217,7 +214,7 @@ public final class MainActivity extends Activity {
         public void jsError(String message, int line) {
             runOnUiThread(() -> showBootError(
                 "JavaScript-indítási hiba:\n" + message + "\nSor: " + line +
-                "\n\nFelis 1.39 — érintsd meg az újrapróbáláshoz."));
+                "\n\nFelis 1.40 — érintsd meg az újrapróbáláshoz."));
         }
     }
 }
