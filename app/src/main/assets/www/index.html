@@ -273,11 +273,11 @@ function setDir(d){dir=d;$("d1").setAttribute("aria-pressed",d===0);$("d2").setA
 $("d1").onclick=function(){setDir(0)};$("d2").onclick=function(){setDir(1)};
 // sentence builder
 var S=[["A lány szereti a rózsát.","Puella rosam amat"],["A fiú látja a barátot.","Puer amicum videt"],["A király hallja a lányokat.","Rex puellas audit"],["Az úr dicséri a rabszolgát.","Dominus servum laudat"],["A barátok az erdőben sétálnak.","Amici in silva ambulant"],["Az anya szereti a lányát.","Mater filiam amat"],["A katona nézi a várost.","Miles urbem spectat"],["A király a városban van.","Rex in urbe est"],["A lányok a csillagokat nézik.","Puellae stellas spectant"],["A béka úszik.","Rana natat"],["A békák úsznak.","Ranae natant"],["A földművesek vannak.","Agricolae sunt"],["A békák vannak.","Ranae sunt"],["A rózsa jó.","Rosa bona est"],["A lány jó.","Puella bona est"],["Ó, lány!","O puella"],["A rózsa a lányé.","Rosa puellae est"],["Az úr rabszolgája dolgozik.","Servus domini laborat"],["Az úr dicséri a fiút.","Dominus puerum laudat"],["A fiú látni fogja a barátot.","Puer amicum videbit"],["A lány szeretett.","Puella amābat"],["A lány megszerette.","Puella amāvit"],["A lány szeretni fog.","Puella amābit"],["A rózsa az erdőben van.","Rosa in silva est"],["Ó, rózsa!","O rosa"]];
-var built=0,si=0,solved=false;
-function sent(){built=1;solved=false;var idx=si%S.length,q=S[idx];$("sq").textContent=q[0];$("sentenceDictionary").textContent="Szótári alakok: "+SENTENCE_WORDS[idx].map(function(k){return dictionaryForm(k)}).join(" · ");$("sinput").value="";$("sfb").textContent="";$("snext").style.display="none";$("sinput").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();$("scheck").click()}}}
+var built=0,si=0,solved=false,activeSentenceIndex=0,SENTENCE_MIN_LEVEL=[];
+function sent(){built=1;solved=false;var maxLevel=completedDeclensionLevel(),eligible=S.map(function(_,i){return i}).filter(function(i){return (SENTENCE_MIN_LEVEL[i]||0)<=maxLevel}),idx=eligible[si%eligible.length]||0;activeSentenceIndex=idx;var q=S[idx];$("sq").textContent=q[0];$("sentenceDictionary").textContent="Szótári alakok: "+SENTENCE_WORDS[idx].map(function(k){return dictionaryForm(k)}).join(" · ");$("sinput").value="";$("sfb").textContent="";$("snext").style.display="none";$("sinput").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();$("scheck").click()}}}
 $("sclear").onclick=function(){if(!solved){$("sinput").value="";$("sfb").textContent="";$("sinput").focus()}};
 $("scheck").onclick=function(){
- if(solved)return;var q=S[si%S.length],typed=$("sinput").value.trim();
+ if(solved)return;var q=S[activeSentenceIndex],typed=$("sinput").value.trim();
  if(!typed){$("sfb").style.color="var(--bad)";$("sfb").textContent="Írd be a latin mondatot.";return}
  if(normalizedSentence(typed)===normalizedSentence(q[1])){solved=true;st.xp=(st.xp||0)+10;st.streak++;save();head();$("sfb").style.color="var(--ok)";$("sfb").textContent="Helyes! A szórend változhat; a ragokat jól használtad. +10 pont";$("snext").style.display="block"}
  else{st.streak=0;head();$("sfb").style.color="var(--bad)";$("sfb").textContent="A szórend szabad. Ellenőrizd a ragokat, a szóalakokat és azt, hogy minden szó szerepel-e."}
@@ -459,14 +459,161 @@ var BANK_SENTENCES={
  fourthDeclension:[{translation:"A hadsereg segítséget kap.",latin:"Exercitus auxilium accipit",words:["exercitus","auxilium","accipio"]},{translation:"A vármegye beleegyezést ad.",latin:"Comitatus assensum dat",words:["comitatus","assensus","do"]}],
  fifthDeclension:[{translation:"A hűség fontos dolog.",latin:"Fides magna est",words:["fides","res","magnus","sum"]},{translation:"A nap elhozza az ügy végét.",latin:"Dies fidem servat",words:["dies","res","fero"]}]
 };
+// Expanded, level-aware examples made from the Latin Workshop vocabulary bank.
+BANK_SENTENCES.firstDeclension=[
+ {translation:"A királynők leveleket írnak.",latin:"Reginae litterās scrībunt",words:["regina","littera","scribo"]},
+ {translation:"A tartományok pénzt küldenek.",latin:"Prōvinciae pecūniam mittunt",words:["provincia","pecunia","mitto"]},
+ {translation:"A lányok rózsákat látnak.",latin:"Puellae rosās vident",words:["puella","rosa","video"]},
+ {translation:"A hajósok szeretik a hazát.",latin:"Nautae patriam amant",words:["nauta","patria","amo"]},
+ {translation:"A földművesek látják a földet.",latin:"Agricolae terram vident",words:["agricola","terra","video"]},
+ {translation:"A tanárnők leveleket írnak.",latin:"Magistrae litterās scrībunt",words:["magistra","littera","scribo"]},
+ {translation:"A rózsák szépek.",latin:"Rosae pulchrae sunt",words:["rosa","pulcher","sum"]},
+ {translation:"A törökök pénzt küldenek.",latin:"Turcae pecūniam mittunt",words:["turca","pecunia","mitto"]}
+];
+BANK_SENTENCES.plural.push(
+ {translation:"A hajósok szeretik a hazát.",latin:"Nautae patriam amant",words:["nauta","patria","amo"]},
+ {translation:"A tanárnők leveleket írnak.",latin:"Magistrae litterās scrībunt",words:["magistra","littera","scribo"]},
+ {translation:"A rózsák szépek.",latin:"Rosae pulchrae sunt",words:["rosa","pulcher","sum"]},
+ {translation:"A törökök pénzt küldenek.",latin:"Turcae pecūniam mittunt",words:["turca","pecunia","mitto"]},
+ {translation:"A kapuk nagyok.",latin:"Portae magnae sunt",words:["porta","magnus","sum"]},
+ {translation:"Az ügyek fontosak.",latin:"Causae magnae sunt",words:["causa","magnus","sum"]}
+);
+BANK_SENTENCES.accusative.push(
+ {translation:"A lány levelet olvas.",latin:"Puella epistulam legit",words:["puella","epistula","lego"]},
+ {translation:"A nő szereti a vizet.",latin:"Fēmina aquam amat",words:["femina","aqua","amo"]},
+ {translation:"A földműves látja a vidéki házat.",latin:"Agricola villam videt",words:["agricola","villa","video"]},
+ {translation:"A hajós nézi a csillagot.",latin:"Nauta stellam spectat",words:["nauta","stella","specto"]},
+ {translation:"A leány szereti a hazát.",latin:"Fīlia patriam amat",words:["filia","patria","amo"]},
+ {translation:"A tanárnő levelet ír.",latin:"Magistra litteram scrībit",words:["magistra","littera","scribo"]}
+);
+BANK_SENTENCES.verbs.push(
+ {translation:"A leány levelet ír.",latin:"Puella epistulam scrībit",words:["puella","epistula","scribo"]},
+ {translation:"A királynő pénzt ad.",latin:"Regina pecūniam dat",words:["regina","pecunia","do"]},
+ {translation:"A nő nézi a vidéki házat.",latin:"Fēmina villam spectat",words:["femina","villa","specto"]},
+ {translation:"A földműves szereti a földet.",latin:"Agricola terram amat",words:["agricola","terra","amo"]},
+ {translation:"A hajós levelet olvas.",latin:"Nauta litteram legit",words:["nauta","littera","lego"]},
+ {translation:"A tanárnő dicséri a lányt.",latin:"Magistra puellam laudat",words:["magistra","puella","laudo"]}
+);
+BANK_SENTENCES.genitive.push(
+ {translation:"A királynő levele világos.",latin:"Littera reginae clāra est",words:["littera","regina","sum"]},
+ {translation:"A tartomány ügye fontos.",latin:"Causa prōvinciae magna est",words:["causa","provincia","magnus","sum"]},
+ {translation:"A leány rózsája szép.",latin:"Rosa fīliae pulchra est",words:["rosa","filia","pulcher","sum"]},
+ {translation:"A vidéki ház kapuja nagy.",latin:"Porta villae magna est",words:["porta","villa","magnus","sum"]},
+ {translation:"A nő hazája nagy.",latin:"Patria fēminae magna est",words:["patria","femina","magnus","sum"]},
+ {translation:"A királynő kúriája nagy.",latin:"Curia reginae magna est",words:["curia","regina","magnus","sum"]}
+);
+BANK_SENTENCES.dative.push(
+ {translation:"A földműves pénzt ad a hajósnak.",latin:"Agricola nautae pecūniam dat",words:["agricola","nauta","pecunia","do"]},
+ {translation:"A tanárnő levelet ad a leánynak.",latin:"Magistra fīliae litteram dat",words:["magistra","filia","littera","do"]},
+ {translation:"A török pénzt küld a tartománynak.",latin:"Turca prōvinciae pecūniam mittit",words:["turca","provincia","pecunia","mitto"]},
+ {translation:"A leány rózsát ad a földművesnek.",latin:"Fīlia agricolae rosam dat",words:["filia","agricola","rosa","do"]},
+ {translation:"A királynő levelet küld a tanárnőnek.",latin:"Regina magistrae litteram mittit",words:["regina","magistra","littera","mitto"]},
+ {translation:"A nő vizet ad a galambnak.",latin:"Fēmina columbae aquam dat",words:["femina","columba","aqua","do"]}
+);
+BANK_SENTENCES.ablative.push(
+ {translation:"A hajós a hazában sétál.",latin:"Nauta in patriā ambulat",words:["nauta","patria","in","ambulo"]},
+ {translation:"A földműves a földön dolgozik.",latin:"Agricola in terrā labōrat",words:["agricola","terra","in","laboro"]},
+ {translation:"A leány a vidéki házban van.",latin:"Fīlia in villā est",words:["filia","villa","in","sum"]},
+ {translation:"A nő a kapuhoz sétál.",latin:"Fēmina ad portam ambulat",words:["femina","porta","ambulo"]},
+ {translation:"A királynő a tartományból érkezik.",latin:"Regina ex prōvinciā venit",words:["regina","provincia","venio"]},
+ {translation:"A hajós a kúriában van.",latin:"Nauta in curiā est",words:["nauta","curia","in","sum"]}
+);
+BANK_SENTENCES.secondDeclension.push(
+ {translation:"A hírnök parancsot kap.",latin:"Nuntius mandātum accipit",words:["nuntius","mandatum","accipio"]},
+ {translation:"A tanár olvassa a szót.",latin:"Magister verbum legit",words:["magister","verbum","lego"]},
+ {translation:"A háború nagy kárt okoz.",latin:"Bellum magnum damnum facit",words:["bellum","magnus","damnum","facio"]},
+ {translation:"Az úr segítséget küld a fiának.",latin:"Dominus fīliō auxilium mittit",words:["dominus","filius","auxilium","mitto"]},
+ {translation:"A követ választ ad.",latin:"Legātus responsum dat",words:["legatus","responsum","do"]},
+ {translation:"A királyság nagy.",latin:"Regnum magnum est",words:["regnum","magnus","sum"]},
+ {translation:"A szolgálat kötelesség.",latin:"Servitium officium est",words:["servitium","officium","sum"]},
+ {translation:"A hírnök kimondja a szót.",latin:"Nuntius verbum dīcit",words:["nuntius","verbum","dico"]},
+ {translation:"Az arany a kúriában van.",latin:"Aurum in curiā est",words:["aurum","curia","in","sum"]},
+ {translation:"A tanárnak van egy eszköze.",latin:"Magister instrumentum habet",words:["magister","instrumentum","habeo"]},
+ {translation:"Az úrnak van egy aranypénze.",latin:"Dominus flōrenum habet",words:["dominus","florenus","habeo"]},
+ {translation:"A tanár érdeme nagy.",latin:"Meritum magistrī magnum est",words:["meritum","magister","magnus","sum"]},
+ {translation:"A birtok cseréje fontos ügy.",latin:"Concambium praediī negōtium est",words:["concambium","praedium","negotium","sum"]},
+ {translation:"A követ tanúvallomást mond.",latin:"Legātus testimōnium dīcit",words:["legatus","testimonium","dico"]},
+ {translation:"A leánynegyed nagy.",latin:"Quartīlicium magnum est",words:["quartilicium","magnus","sum"]},
+ {translation:"Az úr fizetést ad a hírnöknek.",latin:"Dominus nūntiō salārium dat",words:["dominus","nuntius","salarium","do"]},
+ {translation:"A megállapodás megőrzi a szerződést.",latin:"Consensus pactum servat",words:["consensus","pactum","servo"]}
+);
+BANK_SENTENCES.thirdDeclension.push(
+ {translation:"Június egy hónap.",latin:"Iūnius mēnsis est",words:["iunius","mensis","sum"]},
+ {translation:"A király irányítja a várost.",latin:"Rēx cīvitātem regit",words:["rex","civitas","rego"]},
+ {translation:"A katona látja a várost.",latin:"Mīles urbem videt",words:["miles","urbs","video"]},
+ {translation:"Az ember olvassa a törvényt.",latin:"Homō lēgem legit",words:["homo","lex","lego"]},
+ {translation:"Az apa nevet ír.",latin:"Pater nōmen scrībit",words:["pater","nomen","scribo"]},
+ {translation:"A polgárok békét keresnek.",latin:"Cīvēs pācem petunt",words:["civis","pax","peto"]},
+ {translation:"A testvér szereti a nővért.",latin:"Frāter sorōrem amat",words:["frater","soror","amo"]},
+ {translation:"Az ellenség megtámadja a várost.",latin:"Hostis oppidum oppugnat",words:["hostis","oppidum","oppugno"]},
+ {translation:"A császár tanácsot ad a polgároknak.",latin:"Imperātor cīvibus cōnsilium dat",words:["imperator","civis","consilium","do"]},
+ {translation:"A törvény védi a polgárt.",latin:"Lēx cīvem dēfendit",words:["lex","civis","defendo"]},
+ {translation:"A kereskedő árut ad el.",latin:"Mercātor merces vendit",words:["mercator","merx","vendo"]},
+ {translation:"A hír eljut a városon keresztül.",latin:"Rūmor per urbem venit",words:["rumor","per + acc.","urbs","venio"]},
+ {translation:"Az örökös átveszi a megbízást.",latin:"Hērēs mandātum accipit",words:["heres","mandatum","accipio"]},
+ {translation:"A polgárok fogsága nagy kárt okoz.",latin:"Captīvitās cīvium magnum damnum facit",words:["captivitas","civis","damnum","facio"]},
+ {translation:"A város biztonsága fontos.",latin:"Salūs et sēcūritās cīvitātis magnae sunt",words:["salus","securitas","civitas","sum"]},
+ {translation:"A katona becsülete nagy.",latin:"Honor mīlitis magnus est",words:["honor","miles","magnus","sum"]},
+ {translation:"A császár hatalma és tekintélye nagy.",latin:"Potestās et auctōritās imperātōris magnae sunt",words:["potestas","auctoritas","imperator","magnus","sum"]},
+ {translation:"A polgárok joga védi a várost.",latin:"Iūs cīvium cīvitātem dēfendit",words:["ius","civis","civitas","defendo"]},
+ {translation:"A szerződés feltétele védi a polgárok jogát.",latin:"Conditiō pactī iūs cīvium dēfendit",words:["conditio","pactum","ius","civis","defendo"]},
+ {translation:"A méltányosság megőrzi a törvényt.",latin:"Aequitās lēgem servat",words:["aequitas","lex","servo"]},
+ {translation:"A felderítő látja az ellenséget.",latin:"Explōrātor hostem videt",words:["explorator","hostis","video"]},
+ {translation:"A pénzfizetés kötelesség.",latin:"Dātiō pecūniae officium est",words:["datio","pecunia","officium","sum"]},
+ {translation:"Az áruk eladása üzlet.",latin:"Vendītiō mercium negōtium est",words:["venditio","merx","negotium","sum"]},
+ {translation:"A társ hallja a követet.",latin:"Comes legātum audit",words:["comes","legatus","audio"]},
+ {translation:"A király társa nem szereti a háborút.",latin:"Consors rēgis bellum nōn amat",words:["consors","rex","bellum","non","amo"]},
+ {translation:"A halál nagy kárt okoz.",latin:"Mors magnum damnum facit",words:["mors","damnum","facio"]},
+ {translation:"A birtok egy részének értéke nagy.",latin:"Portiō praediī magna est",words:["portio","praedium","magnus","sum"]},
+ {translation:"A polgár birtoka nagy.",latin:"Possessiō cīvis magna est",words:["possessio","civis","magnus","sum"]},
+ {translation:"A király adománya megőrzi a békét.",latin:"Dōnātiō rēgis pācem servat",words:["donatio","rex","pax","servo"]},
+ {translation:"A levél szövege megnevezi az ügyet.",latin:"Tenor litterae rem significat",words:["tenor","littera","res","significo"]},
+ {translation:"A katona hűsége megőrzi a hazát.",latin:"Fīdelitās mīlitis patriam servat",words:["fidelitas","miles","patria","servo"]},
+ {translation:"A dolgok sokfélesége nagy.",latin:"Variētās rērum magna est",words:["varietas","res","magnus","sum"]},
+ {translation:"Az ügy haszna nagy.",latin:"Ūtilitās negōtiī magna est",words:["utilitas","negotium","magnus","sum"]},
+ {translation:"Az utókor dicséri a királyt.",latin:"Posteritās rēgem laudat",words:["posteritas","rex","laudo"]},
+ {translation:"A mag a földben van.",latin:"Sēmen in terrā est",words:["semen","in + acc./abl.","terra","sum"]},
+ {translation:"A polgárok ereje nagy.",latin:"Vigor cīvium magnus est",words:["vigor","civis","magnus","sum"]},
+ {translation:"A leány hozománya nagy.",latin:"Dōs fīliae magna est",words:["dos","filia","magnus","sum"]},
+ {translation:"A biztosíték megvédi a várost.",latin:"Assecurātiō cīvitātem dēfendit",words:["assecuratio","civitas","defendo"]},
+ {translation:"Az adós pénzt ad az úrnak.",latin:"Debitor dominō pecūniam dat",words:["debitor","dominus","pecunia","do"]},
+ {translation:"A hűtlenség megtámadja a királyságot.",latin:"Infīdelitās regnum oppugnat",words:["infidelitas","regnum","oppugno"]},
+ {translation:"A királyi méltóság nagy.",latin:"Serēnitās rēgis magna est",words:["serenitas","rex","magnus","sum"]}
+);
+BANK_SENTENCES.fourthDeclension.push(
+ {translation:"A hadsereg megtámadja a várost.",latin:"Exercitus oppidum oppugnat",words:["exercitus","oppidum","oppugno"]},
+ {translation:"A vármegye követeket küld.",latin:"Comitātus legātōs mittit",words:["comitatus","legatus","mitto"]},
+ {translation:"A ház nagy birtokkal rendelkezik.",latin:"Domus magnum praedium habet",words:["domus","magnus","praedium","habeo"]},
+ {translation:"A megállapodás megőrzi a békét.",latin:"Consensus pācem servat",words:["consensus","pax","servo"]},
+ {translation:"A vármegye választ ad az úrnak.",latin:"Comitātus dominō responsum dat",words:["comitatus","dominus","responsum","do"]},
+ {translation:"A katonák látják a hadsereget.",latin:"Mīlitēs exercitum vident",words:["miles","exercitus","video"]},
+ {translation:"A hiány kárt okoz.",latin:"Dēfectus damnum facit",words:["defectus","damnum","facio"]},
+ {translation:"A hadsereg a városban van.",latin:"Exercitus in oppidō est",words:["exercitus","in","oppidum","sum"]},
+ {translation:"A támadás az ellenség ellen irányul.",latin:"Insultus in hostēs est",words:["insultus","in + acc./abl.","hostis","sum"]},
+ {translation:"A kéz megragadja a levelet.",latin:"Manus epistulam capit",words:["manus","epistula","capio"]},
+ {translation:"A király távozása kárt okoz.",latin:"Dēcessus rēgis damnum facit",words:["decessus","rex","damnum","facio"]},
+ {translation:"A fejedelem beleegyezése megőrzi a békét.",latin:"Assensus principis pācem servat",words:["assensus","princeps","pax","servo"]}
+);
+BANK_SENTENCES.fifthDeclension.push(
+ {translation:"A király hűsége nagy.",latin:"Fidēs rēgis magna est",words:["fides","rex","magnus","sum"]},
+ {translation:"A királynő hűsége megőrzi a békét.",latin:"Fidēs reginae pācem servat",words:["fides","regina","pax","servo"]},
+ {translation:"A háború pusztulása nagy.",latin:"Perniciēs bellī magna est",words:["pernicies","bellum","magnus","sum"]},
+ {translation:"A polgárok hűsége nagy.",latin:"Fidēs cīvium magna est",words:["fides","civis","magnus","sum"]},
+ {translation:"Az ügy oka világos.",latin:"Causa reī clāra est",words:["causa","res","sum"]},
+ {translation:"A hűség megőrzi a királyságot.",latin:"Fidēs regnum servat",words:["fides","regnum","servo"]},
+ {translation:"A nagy ügy a királyé.",latin:"Res magna rēgis est",words:["res","magnus","rex","sum"]},
+ {translation:"A nap békét hoz.",latin:"Diēs pācem fert",words:["dies","pax","fero"]}
+);
+[{level:1,key:"firstDeclension"},{level:2,key:"secondDeclension"},{level:3,key:"thirdDeclension"},{level:4,key:"fourthDeclension"},{level:5,key:"fifthDeclension"}].forEach(function(x){var samples=BANK_SENTENCES[x.key]||[],stride=Math.max(1,Math.ceil(samples.length/11)),visible=samples.filter(function(_,i){return i%stride===0}).slice(0,11);DECLENSION_GRAMMAR[x.level].examples=(DECLENSION_GRAMMAR[x.level].examples||[]).concat(visible.map(function(s){return s.latin+" — "+s.translation}))});
 function uniqueKeys(a){return Array.from(new Set((a||[]).filter(Boolean)))}
-function addBankExamples(groupKey){var g=GROUPS[groupKey],samples=BANK_SENTENCES[groupKey]||[];if(!g)return;g.lessons.forEach(function(item,i){var pool=samples.length?samples:[];item.sentences=pool.concat(item.sentences||[]);if(pool.length&&(!item.example||item.example.indexOf("—")==-1))item.example=pool[i%pool.length].latin+" — "+pool[i%pool.length].translation})}
+function uniqueSentenceList(a){var seen={};return (a||[]).filter(function(s){var k=typeof s==="number"?"#"+s:s&&s.latin?normalizedSentence(s.latin):JSON.stringify(s);if(seen[k])return false;seen[k]=true;return true})}
+function addBankExamples(groupKey){var g=GROUPS[groupKey],samples=BANK_SENTENCES[groupKey]||[];if(!g)return;g.lessons.forEach(function(item,i){var pool=samples.length?samples:[];item.sentences=uniqueSentenceList(pool.concat(item.sentences||[]));if(pool.length&&(!item.example||item.example.indexOf("—")==-1))item.example=pool[i%pool.length].latin+" — "+pool[i%pool.length].translation})}
 ["plural","accusative","verbs","genitive","dative","ablative","secondDeclension","thirdDeclension","fourthDeclension","fifthDeclension"].forEach(addBankExamples);
 // The first-declension paradigms are taught in the opening case topics; no separate topic card is added.
 ["plural","accusative","verbs","genitive","dative","ablative"].forEach(function(key){var g=GROUPS[key];if(!g)return;g.lessons.forEach(function(item){item.words=uniqueKeys(DECLENSION_WORDS[1].concat((item.words||[]).filter(function(k){return declensionForKey(k)<=1})))})});
 // Verb vocabulary from the Latin workshop bank is introduced with the verb topic.
 GROUPS.verbs.lessons.forEach(function(item,i){item.words=uniqueKeys((item.words||[]).concat(BANK_VERB_KEYS.slice(i*14,(i+1)*14)))});
-[2,3,4,5].forEach(function(level){var key=["","firstDeclension","secondDeclension","thirdDeclension","fourthDeclension","fifthDeclension"][level],g=GROUPS[key];if(!g)return;g.lessons.forEach(function(item,i){item.sentences=(BANK_SENTENCES[key]||[]).concat(item.sentences||[]);item.words=declensionKeysForSession(level,i);if(BANK_SENTENCES[key]&&BANK_SENTENCES[key].length){var sample=BANK_SENTENCES[key][i%BANK_SENTENCES[key].length];item.example=sample.latin+" — "+sample.translation}})});
+[2,3,4,5].forEach(function(level){var key=["","firstDeclension","secondDeclension","thirdDeclension","fourthDeclension","fifthDeclension"][level],g=GROUPS[key];if(!g)return;g.lessons.forEach(function(item,i){item.sentences=uniqueSentenceList((BANK_SENTENCES[key]||[]).concat(item.sentences||[]));item.words=declensionKeysForSession(level,i);if(BANK_SENTENCES[key]&&BANK_SENTENCES[key].length){var sample=BANK_SENTENCES[key][i%BANK_SENTENCES[key].length];item.example=sample.latin+" — "+sample.translation}})});
 
 TOPICS.forEach(function(t){if(t.name==="IV. főnévragozás")t.group="fourthDeclension";if(t.name==="V. főnévragozás")t.group="fifthDeclension"});
 if(st.bankVocabularyVersion!==2){[0,1,2,3].forEach(function(i){delete st.lessonsDone[i]});st.bankVocabularyVersion=2;try{localStorage.setItem("felis",JSON.stringify(st))}catch(e){}}
@@ -481,6 +628,22 @@ var DATIVE_SENTENCES=[
  [{translation:"Leveleket küldünk a nőknek.",latin:"Litterās fēminīs mittimus",words:["littera","femina","mitto"]},{translation:"A királynők vizet adnak a galamboknak.",latin:"Reginae columbīs aquam dant",words:["regina","columba","aqua","do"]},{translation:"Pénzt adnak az ügyekre.",latin:"Pecuniam causīs dant",words:["pecunia","causa","do"]}],
  [{translation:"Leveleket adunk a királynőnek.",latin:"Reginae litterās damus",words:["regina","littera","do"]},{translation:"Pénzt küld a nőknek.",latin:"Fēminīs pecuniam mittit",words:["femina","pecunia","mitto"]},{translation:"A királynő leveleket küld a tartományoknak.",latin:"Regina litterās provinciīs mittit",words:["regina","littera","provincia","mitto"]},{translation:"Rózsákat adok a lányoknak.",latin:"Puellīs rosās dō",words:["puella","rosa","do"]}]
 ];
+DATIVE_SENTENCES[0].push(
+ {translation:"A leány rózsát ad a földművesnek.",latin:"Fīlia agricolae rosam dat",words:["filia","agricola","rosa","do"]},
+ {translation:"A tanárnő levelet ad a leánynak.",latin:"Magistra fīliae litteram dat",words:["magistra","filia","littera","do"]},
+ {translation:"A hajós levelet küld a királynőnek.",latin:"Nauta reginae litteram mittit",words:["nauta","regina","littera","mitto"]}
+);
+DATIVE_SENTENCES[1].push(
+ {translation:"A nők vizet adnak a galamboknak.",latin:"Fēminae columbīs aquam dant",words:["femina","columba","aqua","do"]},
+ {translation:"A földművesek pénzt küldenek a tanárnőnek.",latin:"Agricolae magistrae pecūniam mittunt",words:["agricola","magistra","pecunia","mitto"]},
+ {translation:"A lányok rózsát adnak a hajósnak.",latin:"Puellae nautae rosam dant",words:["puella","nauta","rosa","do"]}
+);
+DATIVE_SENTENCES[2].push(
+ {translation:"A királynő vizet ad a tanárnőknek.",latin:"Regina magistrīs aquam dat",words:["regina","magistra","aqua","do"]},
+ {translation:"A nők pénzt adnak a hajósoknak.",latin:"Fēminae nautīs pecūniam dant",words:["femina","nauta","pecunia","do"]},
+ {translation:"A tanárnők levelet küldenek a tartománynak.",latin:"Magistrae prōvinciae litteram mittunt",words:["magistra","provincia","littera","mitto"]}
+);
+DECLENSION_GRAMMAR[1].examples=DECLENSION_GRAMMAR[1].examples.concat(DATIVE_SENTENCES[0].slice(3).map(function(s){return s.latin+" — "+s.translation}));
 var DATIVE_RULES=[
  [ruleQ("A dativus melyik kérdésre felel?",["Kinek? minek?","Kit? mit?","Ki? mi?","Hol?"],"Kinek? minek?"),ruleQ("Mi az első ragozás dativus singularisának végződése?",["-ae","-am","-ā","-ārum"],"-ae"),ruleQ("A puellae alak melyik három szerepet is felveheti?",["Genitivus singularis, dativus singularis, nominativus pluralis","Accusativus singularis, ablativus pluralis, vocativus","Csak dativus","Csak genitivus"],"Genitivus singularis, dativus singularis, nominativus pluralis"),ruleQ("A Reginae litteram dō mondatban mi a reginae?",["Dativus singularis: a királynőnek","Nominativus pluralis: királynők","Accusativus singularis","Ablativus"],"Dativus singularis: a királynőnek"),ruleQ("Miért nem elég az -ae végződés önmagában az eset megállapításához?",["Több esetben és számban is előfordul","Csak igéken áll","Mindig többes számot jelöl","Nem latin végződés"],"Több esetben és számban is előfordul"),ruleQ("Mi a regina részes esete egyes számban?",["reginae","reginam","reginā","reginārum"],"reginae"),ruleQ("A címzett melyik esetben áll?",["Dativusban","Accusativusban","Nominativusban","Genitivusban"],"Dativusban"),ruleQ("Melyik alak jelenti azt, hogy „a tartománynak”?",["provinciae","provinciam","provincia","provinciārum"],"provinciae")],
  [ruleQ("Mi az első ragozás dativus pluralisának végződése?",["-īs","-ae","-ās","-ārum"],"-īs"),ruleQ("Mi a fēmina részes esete többes számban?",["fēminīs","fēminae","fēminās","fēminārum"],"fēminīs"),ruleQ("Melyik másik eset használja ugyanezt a többes számú alakot?",["Ablativus","Nominativus","Accusativus","Genitivus"],"Ablativus"),ruleQ("Mit jelent a Litterās fēminīs mittimus mondatban a fēminīs?",["A nőknek — dativus pluralis","A nők — nominativus pluralis","A nőket — accusativus","A nők miatt — genitivus"],"A nőknek — dativus pluralis"),ruleQ("Melyik végződés a többes számú tárgyeset, nem a részes eset?",["-ās","-īs","-ae","-ārum"],"-ās"),ruleQ("Mi a pecunia részes esete többes számban?",["pecuniīs","pecuniae","pecuniās","pecuniārum"],"pecuniīs"),ruleQ("Melyik alak jelenti azt, hogy „a kapuknak”?",["portīs","portae","portās","portārum"],"portīs"),ruleQ("A többes számú -īs alakot hogyan különíted el dativusként és ablativusként?",["A mondatbeli funkció és az összefüggés alapján","A végződés önmagában megmutatja","Mindig dativus","Mindig ablativus"],"A mondatbeli funkció és az összefüggés alapján")],
@@ -638,6 +801,12 @@ INFLECTION_BANK["dative-0"]=dativeInflections(DATIVE_WORDS.slice(0,15).map(funct
 INFLECTION_BANK["dative-1"]=dativeInflections(DATIVE_WORDS.slice(15,30).map(function(x){return x[0]}),true);
 INFLECTION_BANK["dative-2"]=DATIVE_WORDS.map(function(w,i){var plural=i%2===1,answer=plural?w[4]:w[3];return [w[1]+" — dativus "+(plural?"pluralis":"singularis"),answer,plural?"Többes számban -īs a végződés.":"Egyes számban -ae a végződés."]});
 var CORE_SENTENCES={0:[0,11],1:[0,8],2:[3,18],3:[6,16],4:[0,20],5:[7,12],6:[4,23],7:[20,22]};
+// Add bank sentences to the sentence builder, but reveal each declension only after it is learned.
+SENTENCE_MIN_LEVEL=S.map(function(){return 0});
+function addSentenceBuilderItems(samples,level){(samples||[]).forEach(function(s){var key=normalizedSentence(s.latin);if(S.some(function(old){return normalizedSentence(old[1])===key}))return;S.push([s.translation,s.latin]);SENTENCE_WORDS.push(s.words.slice());SENTENCE_MIN_LEVEL.push(level||1)})}
+var SENTENCE_LEVEL_BY_GROUP={firstDeclension:1,plural:1,accusative:1,verbs:1,genitive:1,dative:1,ablative:1,secondDeclension:2,thirdDeclension:3,fourthDeclension:4,fifthDeclension:5};
+Object.keys(BANK_SENTENCES).forEach(function(key){addSentenceBuilderItems(BANK_SENTENCES[key],SENTENCE_LEVEL_BY_GROUP[key]||1)});
+DATIVE_SENTENCES.forEach(function(samples){addSentenceBuilderItems(samples,1)});
 var currentGroupKey=null;
 function showDetailChrome(show){$("appHeader").hidden=show;$("mainNav").hidden=show}
 var LEARNING_PATH=["plural","accusative","verbs","genitive","dative","ablative","secondDeclension","thirdDeclension","thirdConjugation","fourthDeclension","fifthDeclension","past","future"];
@@ -708,8 +877,8 @@ function makeTasks(l,item,index){
  var inflectionKeys=(typeof availableWords==="function"?availableWords():W).map(function(w){return Array.isArray(w)?w[0]:w}),usedInflectionKeys=[];
  for(var fi=0;fi<6;fi++){var fd=bankInflectionData(formPool[fi%formPool.length],inflectionKeys,usedInflectionKeys);if(fd)tasks.push({type:"inflection",data:fd})}
  var sentencePool=content.sentences&&content.sentences.length?content.sentences:(l.sentences||CORE_SENTENCES[index%8]||[]);
- if(typeof sentencePool==="number")sentencePool=CORE_SENTENCES[index%8]||[sentencePool];if(!sentencePool.length)sentencePool=CORE_SENTENCES[index%8]||[0,1,2];
- for(var si=0;si<3;si++){var sn=sentencePool[si%sentencePool.length];if(typeof sn==="number")tasks.push({type:"sentence",index:sn});else if(sn)tasks.push({type:"sentence",sentence:sn})}
+ if(typeof sentencePool==="number")sentencePool=CORE_SENTENCES[index%8]||[sentencePool];if(!sentencePool.length)sentencePool=CORE_SENTENCES[index%8]||[0,1,2];var sentenceOptions=shuf(sentencePool.slice());
+ for(var si=0;si<3;si++){var sn=sentenceOptions[si%sentenceOptions.length];if(typeof sn==="number")tasks.push({type:"sentence",index:sn});else if(sn)tasks.push({type:"sentence",sentence:sn})}
  return shuf(tasks)
 }
 function beginLesson(){var i=lessonSession.lesson,l=C.lessons[i],groupKey=lessonSession.groupKey,groupIndex=lessonSession.groupIndex,item=lessonSession.groupItem;lessonSession={lesson:i,groupKey:groupKey,groupIndex:groupIndex,groupItem:item,tasks:makeTasks(l,item,i),at:0,pick:[],firstTryCorrect:0};$("lessonIntro").hidden=true;$("lessonExercise").hidden=false;$("lessonComplete").hidden=true;$("exerciseTitle").textContent=$("lessonTitle").textContent;document.body.classList.add("exercise-mode");showDetailChrome(true);syncExerciseViewport();renderTask()}
